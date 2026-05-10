@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>국어 개념 학습</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #f4f1ec; font-family: 'Noto Sans KR', sans-serif; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.fade { animation: fadeIn 0.3s ease-out; }
+button { cursor: pointer; font-family: 'Noto Sans KR', sans-serif; }
+input { outline: none; font-family: 'Noto Sans KR', sans-serif; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState } = React;
+
+// =====================================================================
+// ★ 유튜브 링크 설정
+// 각 개념의 youtube 항목에 링크를 넣으세요.
+// 링크가 없으면 null로 두시면 버튼이 표시되지 않습니다.
+// 예시: youtube: "https://www.youtube.com/watch?v=XXXXXXXXXXX"
+// =====================================================================
+
+const LIT_CONCEPTS = [
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 1. 표현법
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "표현법",
+    title: "비유법 — 직유·은유·의인",
+    youtube: null, // ← 여기에 유튜브 링크를 넣으세요
+    summary: "어떤 대상을 다른 대상에 빗대어 표현하는 방법. 직유·은유·의인법이 핵심입니다.",
+    content: [
+      { label: "직유법", body: "'~처럼', '~같이', '~듯이'를 사용해 직접 비교하는 방법", example: "구름에 달 가듯이 가는 나그네 / 내 마음은 호수처럼 고요하다" },
+      { label: "은유법", body: "'A는 B다' 또는 'A가 B가 되다' 형식으로 두 대상을 동일시하는 방법", example: "내 마음은 호수요 / 그는 나에게로 와서 꽃이 되었다" },
+      { label: "의인법", body: "사람이 아닌 대상(사물·동물·자연)에 인간의 감정·행동을 부여하는 방법", example: "풀이 눕는다 / 풀이 울었다 / 산이 나를 부른다" },
+      { label: "활유법", body: "생명이 없는 것에 생명력·움직임을 부여하는 방법 (의인법의 확장)", example: "산맥들이 바다를 연모해 휘달릴 때" },
+      { label: "고등 연결", body: "수능·모의고사에서는 '이 시에 쓰인 표현 방법으로 적절한 것은?'처럼 표현법을 정확히 구별하도록 요구합니다. 직유와 은유의 차이, 의인과 활유의 차이를 명확히 알아야 합니다.", example: "" },
+    ],
+    questions: [
+      { q: "'내가 그의 이름을 불러 주었을 때, 그는 나에게로 와서 꽃이 되었다'에 쓰인 표현법은?", options: ["직유법", "은유법", "의인법", "활유법"], answer: 1, exp: "'A가 B가 되었다' 형식으로 대상을 꽃으로 동일시한 은유법입니다. '~처럼'이 없으므로 직유법이 아닙니다." },
+      { q: "'풀이 눕는다, 풀이 울었다'에 쓰인 표현법은?", options: ["직유법", "은유법", "의인법", "활유법"], answer: 2, exp: "식물(풀)에 인간의 행동(눕다·울다)을 부여한 의인법입니다." },
+      { q: "'구름에 달 가듯이 가는 나그네'에 쓰인 표현법은?", options: ["은유법", "직유법", "의인법", "활유법"], answer: 1, exp: "'~듯이'라는 연결어를 사용해 나그네의 이동을 달의 움직임에 직접 비유한 직유법입니다." },
+      { q: "다음 중 은유법이 쓰인 문장은?", options: ["내 마음은 호수처럼 고요하다", "내 마음은 호수요", "산이 나를 부른다", "바람처럼 달려간다"], answer: 1, exp: "'내 마음은 호수요'는 '~처럼' 없이 두 대상을 동일시한 은유법입니다. '호수처럼'은 직유법입니다." },
+    ]
+  },
+  {
+    category: "표현법",
+    title: "음성 상징어 — 의성어·의태어",
+    youtube: null, // ← 여기에 유튜브 링크를 넣으세요
+    summary: "소리나 모양을 흉내 낸 말로, 시의 운율과 생동감을 형성합니다. 비유법과 다른 개념입니다.",
+    content: [
+      { label: "의성어", body: "사람이나 사물의 소리를 흉내 낸 말", example: "졸졸 흐른다 / 우르르 천둥이 친다 / 지국총 지국총 어사와" },
+      { label: "의태어", body: "사람이나 사물의 모양·움직임을 흉내 낸 말", example: "팔랑팔랑 날아간다 / 사뿐히 즈려밟고 / 해설피 울음을 우는" },
+      { label: "시에서의 기능", body: "음성 상징어는 운율을 형성하고 장면을 생동감 있게 표현합니다. 비유법(직유·은유 등)과 혼동하지 마세요.", example: "청산별곡의 '얄리얄리 얄랑셩' → 음악적 리듬 형성" },
+      { label: "고등 연결", body: "수능에서 '청각적 이미지', '음악적 효과' 등과 연결되어 출제됩니다. 또한 '공감각적 이미지'(한 감각을 다른 감각으로 표현)와 구별해야 합니다.", example: "'금빛 게으른 울음' → 청각(울음)을 시각(금빛)으로 표현한 공감각적 이미지" },
+    ],
+    questions: [
+      { q: "'졸졸 흐른다'에서 '졸졸'은 어떤 종류의 말인가?", options: ["의태어", "의성어", "직유법", "은유법"], answer: 1, exp: "'졸졸'은 물 흐르는 소리를 흉내 낸 의성어입니다." },
+      { q: "'팔랑팔랑 날아간다'에서 '팔랑팔랑'은?", options: ["의성어", "의태어", "역설법", "반복법"], answer: 1, exp: "'팔랑팔랑'은 모양·움직임을 흉내 낸 의태어입니다." },
+      { q: "음성 상징어가 시에서 하는 주된 역할은?", options: ["주제를 직접 전달한다", "운율을 형성하고 장면을 생동감 있게 표현한다", "인물의 심리를 분석한다", "사건의 전환을 알린다"], answer: 1, exp: "의성어·의태어는 의미 전달보다 운율과 생동감 형성에 기여합니다." },
+    ]
+  },
+  {
+    category: "표현법",
+    title: "강조·변화법 — 반복·점층·대조·반어·역설",
+    youtube: null, // ← 여기에 유튜브 링크를 넣으세요
+    summary: "의미를 강조하거나 변화를 주는 표현 방법들입니다. 특히 반어와 역설의 구별이 중요합니다.",
+    content: [
+      { label: "반복법", body: "같은 말이나 구절을 되풀이하여 의미를 강조", example: "껍데기는 가라 / 껍데기는 가라 (수미상관도 반복의 일종)" },
+      { label: "점층법", body: "의미나 감정이 점점 강해지도록 배열하는 방법", example: "바람보다 빨리 눕고 / 바람보다 빨리 울고 / 바람보다 먼저 일어난다" },
+      { label: "대조법", body: "반대되는 내용을 나란히 놓아 의미를 강조", example: "흥부(선) vs 놀부(악) / 과거(행복)와 현재(슬픔) 대비" },
+      { label: "반어법", body: "표현과 실제 의미가 반대인 방법 — 실제 슬픔을 기쁘게, 실제 분노를 칭찬으로", example: "죽어도 아니 눈물 흘리오리다 (실제로는 매우 슬픔)" },
+      { label: "역설법", body: "겉으로는 모순처럼 보이지만 그 안에 진실이 담긴 표현", example: "겨울은 강철로 된 무지갠가 보다 (강철=절망, 무지개=희망의 역설)" },
+      { label: "고등 연결", body: "반어와 역설은 수능 단골 문제입니다. 반어는 '표현≠의미', 역설은 '모순 속의 진실'로 구별하세요. 풍자는 사회·인물의 잘못을 비웃어 비판하는 방식으로 반어와 함께 쓰이는 경우가 많습니다.", example: "" },
+    ],
+    questions: [
+      { q: "'죽어도 아니 눈물 흘리오리다'에 쓰인 표현법은?", options: ["역설법", "반어법", "점층법", "대조법"], answer: 1, exp: "눈물을 안 흘리겠다고 하지만 실제로는 극도로 슬프다는 것으로, 표현과 실제 의미가 반대인 반어법입니다." },
+      { q: "'겨울은 강철로 된 무지갠가 보다'처럼 모순처럼 보이지만 진실을 담은 표현법은?", options: ["반어법", "역설법", "반복법", "대조법"], answer: 1, exp: "강철(절망)과 무지개(희망)가 모순처럼 결합됐지만 극한 고난 속 희망이라는 진실을 담은 역설법입니다." },
+      { q: "'바람보다 빨리 눕고 / 바람보다 먼저 일어난다'에 쓰인 표현법은?", options: ["반복법", "점층법", "반어법", "역설법"], answer: 1, exp: "빨리 → 먼저로 의미가 점점 강해지는 점층법입니다." },
+      { q: "다음 중 대조법이 쓰인 것은?", options: ["껍데기는 가라, 껍데기는 가라", "흥부는 착하고 놀부는 악하다", "죽어도 아니 눈물 흘리오리다", "바람보다 먼저 일어난다"], answer: 1, exp: "착한 흥부와 악한 놀부를 나란히 제시한 것이 대조법입니다." },
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 2. 화자·시점
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "화자·시점",
+    title: "시의 화자 — 화자·어조·태도",
+    youtube: null,
+    summary: "시 속에서 말하는 존재가 화자입니다. 화자의 정서·어조·태도를 파악하는 것이 시 감상의 핵심입니다.",
+    content: [
+      { label: "화자(시적 자아)", body: "시 속에서 말하는 존재. 작가 자신과 다를 수 있습니다.", example: "진달래꽃 → 화자: 이별을 앞둔 여성 (작가 김소월 자신이 아님)" },
+      { label: "어조", body: "화자가 말하는 태도와 분위기", example: "명령적 어조: '껍데기는 가라' / 체념적 어조: '말없이 고이 보내 드리오리다'" },
+      { label: "화자의 정서·태도", body: "화자가 느끼는 감정(슬픔·그리움·분노·희망 등)과 대상을 대하는 방식", example: "그리움 / 체념과 헌신 / 저항과 의지 / 관조적 태도" },
+      { label: "표면적·이면적 화자", body: "표면: 시에서 보이는 화자 / 이면: 실제로 말하고자 하는 대상", example: "사미인곡 → 표면: 임을 그리는 여성 / 이면: 임금을 사모하는 신하(정철)" },
+      { label: "고등 연결", body: "수능에서 '화자의 정서로 가장 적절한 것은?', '화자의 태도 변화를 설명한 것으로 옳은 것은?' 형태로 자주 출제됩니다. 연군지정(임금 그리움), 강호한정(자연 속 여유), 정한(슬픔+한) 등 핵심 정서 개념도 함께 익히세요.", example: "" },
+    ],
+    questions: [
+      { q: "시에서 화자와 작가의 관계로 옳은 것은?", options: ["항상 동일하다", "화자는 작가가 창조한 존재로, 작가와 다를 수 있다", "화자는 항상 여성이다", "화자는 항상 1인칭으로 드러난다"], answer: 1, exp: "화자는 작가가 시 안에서 설정한 말하는 존재로, 작가 자신과 동일하지 않을 수 있습니다." },
+      { q: "'껍데기는 가라'에서 화자의 어조로 가장 적절한 것은?", options: ["애원하는 어조", "명령적·저항적 어조", "체념적 어조", "관조적 어조"], answer: 1, exp: "명령형 종결어미 '~가라'를 반복하여 단호하고 저항적인 어조를 형성합니다." },
+      { q: "사미인곡에서 '임을 그리워하는 여성 화자'가 이면적으로 표현하는 것은?", options: ["자연에 대한 예찬", "임금을 사모하는 신하의 충정(연군지정)", "이별한 연인에 대한 그리움", "유배 생활의 억울함"], answer: 1, exp: "사미인곡은 여성 화자를 표면에 내세우지만, 이면에는 정철이 임금(선조)을 그리워하는 연군지정을 담습니다." },
+    ]
+  },
+  {
+    category: "화자·시점",
+    title: "소설의 시점 — 1인칭·전지적·관찰자",
+    youtube: null,
+    summary: "소설에서 이야기를 전달하는 서술자의 위치와 방식을 '시점'이라고 합니다.",
+    content: [
+      { label: "1인칭 주인공 시점", body: "주인공인 '나'가 자신의 이야기를 직접 서술. 독자와 친밀감·몰입감 형성", example: "동백꽃: '나는 점순이가 이상하다고 생각하였다'" },
+      { label: "1인칭 관찰자 시점", body: "부수적 인물인 '나'가 주인공을 관찰하며 서술. 주인공의 내면을 완전히 알 수 없음", example: "'나'가 다른 인물의 이야기를 전달하는 방식" },
+      { label: "전지적 작가 시점", body: "서술자가 신처럼 모든 인물의 내면 심리까지 알고 서술. 가장 많이 쓰이는 시점", example: "운수 좋은 날: '저도 모르게 입에서 나왔다'" },
+      { label: "3인칭 관찰자 시점", body: "외부에서 인물의 행동만 관찰. 내면 심리는 직접 서술하지 않음", example: "인물이 무엇을 생각하는지 독자가 직접 판단해야 함" },
+      { label: "고등 연결", body: "수능에서 '이 소설의 서술 방식으로 적절하지 않은 것은?', '서술자의 개입'이라는 표현으로 출제됩니다. 전지적 시점에서 서술자가 직접 해설·논평하는 것을 '편집자적 논평'이라 합니다.", example: "" },
+    ],
+    questions: [
+      { q: "'저도 모르게 입에서 나왔다'처럼 인물의 심리를 서술자가 직접 해설하는 시점은?", options: ["1인칭 주인공 시점", "1인칭 관찰자 시점", "전지적 작가 시점", "3인칭 관찰자 시점"], answer: 2, exp: "서술자가 인물의 무의식적 심리까지 해설하는 전지적 작가 시점의 특징입니다." },
+      { q: "1인칭 주인공 시점의 특징으로 가장 적절한 것은?", options: ["모든 인물의 심리를 알 수 있다", "주인공이 자신의 이야기를 직접 서술하여 친밀감을 준다", "인물의 행동만 관찰하여 서술한다", "여러 서술자가 번갈아 이야기한다"], answer: 1, exp: "1인칭 주인공 시점은 주인공 '나'의 직접 고백으로 독자에게 친밀감과 몰입감을 줍니다." },
+      { q: "3인칭 관찰자 시점의 특징으로 가장 적절한 것은?", options: ["서술자가 인물의 내면을 직접 해설한다", "주인공이 직접 이야기를 전달한다", "인물의 행동과 외양만 묘사하여 독자가 내면을 추측해야 한다", "부수적 인물이 주인공을 관찰한다"], answer: 2, exp: "3인칭 관찰자 시점은 카메라처럼 외부만 관찰하므로 인물의 내면을 직접 서술하지 않습니다." },
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 3. 갈래
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "갈래",
+    title: "고전시가 — 향가·고려속요·시조·가사",
+    youtube: null,
+    summary: "고전시가는 장르별 형식·특징·대표 작품을 묶어 기억하는 것이 중요합니다.",
+    content: [
+      { label: "향가", body: "신라 시대 향찰로 기록된 노래. 4구체·8구체·10구체로 나뉘며, 10구체가 완성형. 낙구('아으'로 시작)에서 시상 전환.", example: "제망매가(10구체, 월명사) / 찬기파랑가(10구체, 충담사)" },
+      { label: "고려 속요", body: "고려 시대 평민들의 노래. 후렴구 반복, 분연체 구조, 3음보 율격. 남녀 간의 사랑·이별·자연 소재 많음.", example: "청산별곡 / 가시리 / 동동 / 정과정(유일한 작자 표기)" },
+      { label: "시조", body: "3장 6구 45자 내외의 정형시. 초장·중장·종장 구성. 조선 시대 사대부의 대표 문학.", example: "도산십이곡(이황) / 어부사시사(윤선도) / 평시조·사설시조" },
+      { label: "가사", body: "3·4조(4·4조) 율격의 연속체 문학. 기행가사·유배가사·내방가사·강호가사로 구분.", example: "관동별곡·사미인곡·속미인곡(정철) / 연군지정(사미인곡) / 기행(관동별곡)" },
+      { label: "고등 연결", body: "수능에서 두 작품을 함께 제시하고 형식·내용·표현을 비교하는 문제가 자주 나옵니다. 장르별 형식적 특징(구체·분연체·3장 구성)과 대표 정서(연군지정·강호한정·정한)를 연결해 익히세요.", example: "" },
+    ],
+    questions: [
+      { q: "제망매가, 찬기파랑가처럼 신라 시대 향찰로 기록된 노래의 장르는?", options: ["고려 속요", "향가", "시조", "가사"], answer: 1, exp: "향가는 신라 시대 향찰로 기록된 우리나라 최초의 정형시입니다." },
+      { q: "청산별곡, 가시리처럼 후렴구가 반복되는 고려 시대 평민 노래의 장르는?", options: ["향가", "시조", "고려 속요", "가사"], answer: 2, exp: "고려 속요는 후렴구 반복과 분연체 구조가 특징입니다." },
+      { q: "관동별곡, 사미인곡처럼 3·4조 율격의 긴 연속체 장르는?", options: ["시조", "향가", "고려 속요", "가사"], answer: 3, exp: "가사는 3·4조(4·4조)의 연속체로 기행·유배·강호 등 다양한 내용을 담습니다." },
+      { q: "시조의 형식으로 옳은 것은?", options: ["4구체·8구체·10구체", "3장 6구 45자 내외", "분연체+후렴구", "3·4조 연속체"], answer: 1, exp: "시조는 초장·중장·종장의 3장, 각 2구씩 6구, 45자 내외가 기본 형식입니다." },
+    ]
+  },
+  {
+    category: "갈래",
+    title: "현대시 — 서정시·참여시·이미지",
+    youtube: null,
+    summary: "현대시는 자유시가 주류이며, 서정시와 참여시, 다양한 이미지 기법을 구별할 수 있어야 합니다.",
+    content: [
+      { label: "서정시", body: "화자의 감정·정서를 중심으로 표현한 시. 아름다운 이미지와 언어 사용.", example: "진달래꽃(김소월) / 향수(정지용) / 나그네(박목월) / 꽃(김춘수)" },
+      { label: "참여시(경향시)", body: "사회·역사적 현실에 개입하여 비판·저항 의식을 담은 시.", example: "껍데기는 가라(신동엽) / 광야(이육사) / 풀(김수영) / 절정(이육사)" },
+      { label: "이미지(심상)", body: "시에서 감각적으로 표현된 언어적 그림. 시각·청각·후각·미각·촉각·공감각 이미지로 구분.", example: "시각: 금빛 저녁놀 / 청각: 새 울음 / 공감각: '금빛 게으른 울음'(청각→시각)" },
+      { label: "수미상관", body: "시의 처음과 끝에 같은 구절이 반복되는 구조. 주제 강조와 완결성 부여.", example: "나그네: '구름에 달 가듯이 가는 나그네'가 처음과 끝에 반복" },
+      { label: "고등 연결", body: "수능에서 '이미지'는 매우 중요합니다. 특히 공감각적 이미지(한 감각을 다른 감각으로 전환)와 객관적 상관물(화자의 감정을 간접적으로 드러내는 사물)을 정확히 파악해야 합니다.", example: "객관적 상관물: 진달래꽃 → 화자의 사랑·슬픔을 상징" },
+    ],
+    questions: [
+      { q: "껍데기는 가라, 광야, 풀처럼 현실 비판·저항 의식을 담은 시의 유형은?", options: ["서정시", "참여시", "서사시", "극시"], answer: 1, exp: "사회·역사적 현실에 적극 개입하여 비판하는 시를 참여시(경향시)라 합니다." },
+      { q: "'금빛 게으른 울음'처럼 소리(청각)를 색깔(시각)로 표현하는 이미지를 무엇이라 하는가?", options: ["직유", "은유", "공감각적 이미지", "의성법"], answer: 2, exp: "한 감각(청각)을 다른 감각(시각)으로 전환하여 표현하는 공감각적 이미지입니다." },
+      { q: "시의 처음과 끝에 같은 구절이 반복되는 구조를 무엇이라 하는가?", options: ["점층법", "수미상관", "반복법", "대조법"], answer: 1, exp: "수미상관은 시의 머리(수)와 꼬리(미)가 같은 구절로 호응하는 구조입니다." },
+    ]
+  },
+  {
+    category: "갈래",
+    title: "소설의 구성 요소 — 인물·사건·배경·갈등",
+    youtube: null,
+    summary: "소설은 인물·사건·배경의 3요소로 이루어지며, 갈등 구조가 서사를 이끌어 갑니다.",
+    content: [
+      { label: "소설의 3요소", body: "인물(누가) + 사건(무엇을) + 배경(어디서·언제)", example: "운수 좋은 날: 인물(김 첨지) + 사건(아내 죽음) + 배경(일제강점기 서울)" },
+      { label: "갈등의 종류", body: "내적 갈등: 한 인물 내면의 충돌 / 외적 갈등: 인물 vs 인물·사회·자연·운명", example: "내적: 구운몽 성진 (수행 vs 세속 욕망) / 외적: 홍길동 (개인 vs 신분 제도)" },
+      { label: "복선", body: "나중에 일어날 사건을 미리 암시하는 장치", example: "운수 좋은 날: 흐린 날씨 → 아내의 죽음을 암시" },
+      { label: "극적 아이러니", body: "독자는 알지만 인물은 모르는 상황 → 긴장감·해학 유발", example: "동백꽃: 독자는 점순이 마음을 알지만 '나'는 전혀 모름" },
+      { label: "고등 연결", body: "수능에서 '이 작품의 서술 방식', '인물의 갈등 양상', '이 장면의 기능'처럼 출제됩니다. 복선·액자 구조·편집자적 논평 등의 개념도 함께 익히세요.", example: "액자 구조: 이야기 안에 또 다른 이야기가 삽입되는 구조" },
+    ],
+    questions: [
+      { q: "홍길동전에서 홍길동이 서얼 차별 제도 때문에 고통받는 것은 어떤 갈등인가?", options: ["내적 갈등", "외적 갈등(인물 vs 사회)", "외적 갈등(인물 vs 자연)", "외적 갈등(인물 vs 운명)"], answer: 1, exp: "개인(홍길동)이 사회 구조(서얼 차별 제도)와 충돌하는 외적 갈등입니다." },
+      { q: "운수 좋은 날에서 흐린 날씨가 하는 서사적 기능은?", options: ["배경만 나타내는 묘사", "복선", "액자 구조", "극적 아이러니"], answer: 1, exp: "흐린 날씨가 아내의 죽음이라는 비극적 결말을 미리 암시하는 복선 역할을 합니다." },
+      { q: "동백꽃에서 독자는 점순이의 마음을 알지만 주인공 '나'는 전혀 모르는 상황은?", options: ["복선", "사실주의", "극적 아이러니", "액자 구조"], answer: 2, exp: "서술자와 독자 간의 인식 차이를 활용한 극적 아이러니로 해학적 웃음을 유발합니다." },
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 4. 고전소설
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "고전소설",
+    title: "고전소설의 유형 — 영웅·판소리계·가정·몽자류",
+    youtube: null,
+    summary: "고전소설은 유형별로 서사 구조와 주제가 다릅니다. 유형을 알면 작품 분석이 쉬워집니다.",
+    content: [
+      { label: "영웅소설", body: "비범한 탄생 → 시련·고난 → 능력 발휘 → 승리의 전형적 구조. 권선징악 주제.", example: "홍길동전(허균) / 박씨전 / 임진록" },
+      { label: "판소리계 소설", body: "판소리에서 파생된 소설. 해학과 풍자, 민중의 목소리 반영. 권선징악 구조.", example: "춘향전 / 흥부전 / 심청전 / 토끼전(수궁가)" },
+      { label: "가정소설", body: "가정 내 갈등(계모·처첩 갈등 등)을 중심 소재로 한 소설.", example: "사씨남정기(김만중): 사씨(선)와 교씨(악)의 갈등 → 인현왕후 사건 우의" },
+      { label: "몽자류소설", body: "꿈속 경험을 서사의 핵심으로 삼는 소설. 현실→꿈→현실의 구조로 인생무상 깨달음.", example: "구운몽(김만중): 성진이 꿈에서 양소유의 삶을 살다 깨달음" },
+      { label: "고등 연결", body: "수능에서 고전소설은 작품의 유형 파악, 인물의 성격, 사회적 의미, 표현 방식 등을 묻습니다. 특히 '작품 창작 배경'과 '주제 의식'을 함께 파악하세요.", example: "허생전(박지원): 실학사상 → 무능한 사대부 풍자" },
+    ],
+    questions: [
+      { q: "홍길동전, 박씨전처럼 비범한 인물이 시련을 극복하는 소설 유형은?", options: ["가정소설", "영웅소설", "판소리계 소설", "몽자류소설"], answer: 1, exp: "영웅소설은 비범한 탄생-고난-능력 발휘-승리의 전형적 서사 구조를 지닙니다." },
+      { q: "구운몽처럼 꿈속 경험을 서사의 핵심으로 삼는 소설 유형은?", options: ["영웅소설", "가정소설", "판소리계 소설", "몽자류소설"], answer: 3, exp: "구운몽은 꿈속에서 양소유로 살다 깨어나 인생무상을 깨닫는 몽자류소설입니다." },
+      { q: "사씨남정기에서 사씨(선)와 교씨(악)의 갈등이 담은 역사적 배경으로 가장 적절한 것은?", options: ["임진왜란", "병자호란", "인현왕후 폐위(장희빈 사건)", "고조선 건국"], answer: 2, exp: "사씨남정기는 숙종 대 인현왕후 폐위와 장희빈 사건을 우의적으로 비판한 작품입니다." },
+    ]
+  },
+];
+
+const GRAM_CONCEPTS = [
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 1. 품사
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "품사",
+    title: "품사의 종류 — 9품사 개관",
+    youtube: null, // ← 여기에 유튜브 링크를 넣으세요
+    summary: "국어의 품사는 9가지입니다. 각 품사의 특성과 역할을 구별하는 것이 문법의 출발점입니다.",
+    content: [
+      { label: "체언 (명사·대명사·수사)", body: "문장에서 주어·목적어·보어 역할. 조사와 결합.", example: "명사: 학교, 책 / 대명사: 나, 이것, 누구 / 수사: 하나, 첫째" },
+      { label: "용언 (동사·형용사)", body: "동사: 동작·작용 표현 / 형용사: 성질·상태 표현. 어간+어미로 구성되며 활용함.", example: "동사: 먹다, 달리다 / 형용사: 예쁘다, 높다" },
+      { label: "관계언 (조사)", body: "체언 뒤에 붙어 문장 성분 관계를 나타냄. 격조사·접속조사·보조사로 구분.", example: "격조사: 이/가, 을/를, 에서 / 보조사: 은/는, 도, 만" },
+      { label: "수식언 (관형사·부사)", body: "관형사: 체언 수식 / 부사: 용언·관형사·다른 부사·문장 전체 수식. 활용하지 않음.", example: "관형사: 새 책, 헌 옷 / 부사: 매우, 빨리, 과연" },
+      { label: "독립언 (감탄사)", body: "문장에서 독립적으로 쓰여 감정·의지·대답 표현.", example: "아, 와, 네, 아니오, 이봐" },
+    ],
+    questions: [
+      { q: "'나는 새 책을 빨리 읽었다'에서 관형사는?", options: ["나", "새", "빨리", "읽었다"], answer: 1, exp: "'새'는 체언(책)을 수식하는 관형사입니다. '빨리'는 부사입니다." },
+      { q: "다음 중 형용사인 것은?", options: ["달리다", "먹다", "예쁘다", "읽다"], answer: 2, exp: "'예쁘다'는 성질·상태를 표현하는 형용사입니다. 나머지는 동작을 표현하는 동사입니다." },
+      { q: "조사의 특성으로 옳은 것은?", options: ["혼자 쓰일 수 있다", "체언 뒤에 붙어 문장 성분 관계를 나타낸다", "활용한다", "용언을 수식한다"], answer: 1, exp: "조사는 체언 뒤에 붙어(의존 형태소) 문장 성분 간의 관계를 나타냅니다." },
+      { q: "'아, 정말 아름답다!'에서 '아'의 품사는?", options: ["명사", "부사", "감탄사", "형용사"], answer: 2, exp: "'아'는 감정을 나타내며 문장에서 독립적으로 쓰이는 감탄사입니다." },
+    ]
+  },
+  {
+    category: "품사",
+    title: "동사와 형용사 구별",
+    youtube: null,
+    summary: "동사와 형용사는 모두 '용언'이지만 구별 방법이 있습니다. 수능 문법에서 자주 출제됩니다.",
+    content: [
+      { label: "동사", body: "동작·작용을 나타냄. 현재진행형(-고 있다)이 자연스러움.", example: "먹다→먹고 있다(자연스러움) / 달리다→달리고 있다(자연스러움)" },
+      { label: "형용사", body: "성질·상태를 나타냄. 현재진행형(-고 있다)이 어색함.", example: "예쁘다→예쁘고 있다(어색함) / 높다→높고 있다(어색함)" },
+      { label: "구별법", body: "'-고 있다'를 붙였을 때 자연스러우면 동사, 어색하면 형용사", example: "있다: 동사(책이 있다→있고 있다 ×) → 예외적 경우 주의" },
+      { label: "헷갈리는 단어", body: "없다·계시다·있다는 형용사처럼 쓰이지만 품사 분류에 주의 필요. '이다'는 서술격 조사.", example: "있다: 존재·소유는 형용사 / 계시다: 높임 형용사" },
+    ],
+    questions: [
+      { q: "다음 중 형용사인 것은?", options: ["먹다", "달리다", "넓다", "읽다"], answer: 2, exp: "'넓다'는 상태를 나타내는 형용사입니다. 나머지는 동작을 나타내는 동사입니다." },
+      { q: "동사와 형용사를 구별하는 가장 간단한 방법은?", options: ["'-을/를' 붙이기", "'-고 있다' 붙여보기", "'-이다' 붙이기", "'-에서' 붙이기"], answer: 1, exp: "'-고 있다'를 붙였을 때 자연스러우면 동사, 어색하면 형용사입니다." },
+      { q: "'예쁘고 있다'가 어색한 이유는?", options: ["'예쁘다'가 동사이기 때문에", "'예쁘다'가 형용사로 상태를 나타내기 때문에", "'예쁘다'가 조사이기 때문에", "'예쁘다'가 명사이기 때문에"], answer: 1, exp: "형용사는 성질·상태를 나타내므로 진행의 의미를 가진 '-고 있다'와 어울리지 않습니다." },
+    ]
+  },
+  {
+    category: "품사",
+    title: "조사의 종류 — 격조사·접속조사·보조사",
+    youtube: null,
+    summary: "조사는 체언에 붙어 문장에서의 역할을 나타냅니다. 종류와 기능을 구별해야 합니다.",
+    content: [
+      { label: "격조사", body: "체언의 문장 성분을 나타내는 조사", example: "주격: 이/가 / 목적격: 을/를 / 관형격: 의 / 부사격: 에·에서·에게·으로 / 호격: 아/야 / 서술격: 이다" },
+      { label: "접속조사", body: "두 단어를 같은 자격으로 이어주는 조사", example: "와/과, 하고, (이)랑 → '책과 연필', '너랑 나'" },
+      { label: "보조사", body: "특별한 의미(대조·강조·한정 등)를 더하는 조사", example: "은/는(대조·주제) / 도(포함) / 만(한정) / 까지(범위 포함) / 조차(포함·더함)" },
+      { label: "주격 vs 보조사 구별", body: "'은/는'은 문장에서 주어처럼 보이지만 주격조사가 아닌 보조사. 이/가가 주격조사.", example: "나는 학생이다(는=보조사) / 나는 학생이 아니다(가=주격조사)" },
+    ],
+    questions: [
+      { q: "'나는 학교에서 공부한다'에서 '에서'의 종류는?", options: ["주격조사", "목적격조사", "부사격조사", "보조사"], answer: 2, exp: "'에서'는 장소를 나타내는 부사격조사입니다." },
+      { q: "'책과 연필'에서 '과'의 종류는?", options: ["격조사", "접속조사", "보조사", "서술격 조사"], answer: 1, exp: "'과'는 책과 연필을 같은 자격으로 이어주는 접속조사입니다." },
+      { q: "'나만 몰랐다'에서 '만'의 기능으로 가장 적절한 것은?", options: ["주어임을 나타냄", "한정의 의미를 더함", "두 단어를 이어줌", "서술어임을 나타냄"], answer: 1, exp: "'만'은 한정의 의미를 더하는 보조사입니다." },
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 2. 문장성분
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "문장성분",
+    title: "문장 성분 — 주어·서술어·목적어·보어",
+    youtube: null,
+    summary: "문장을 구성하는 성분들의 역할을 파악하면 독해와 문법 문제 모두 쉬워집니다.",
+    content: [
+      { label: "주어", body: "동작·상태의 주체. '누가/무엇이'에 해당. 이/가·은/는·께서 등이 붙음.", example: "학생이 공부한다 / 꽃이 예쁘다" },
+      { label: "서술어", body: "주어의 동작·상태·성질을 풀이. '어찌하다/어떠하다/무엇이다'에 해당.", example: "달린다(동사) / 예쁘다(형용사) / 학생이다(명사+이다)" },
+      { label: "목적어", body: "동사가 나타내는 동작의 대상. '무엇을'에 해당. 을/를이 붙음.", example: "나는 책을 읽는다 → '책을'이 목적어" },
+      { label: "보어", body: "'되다·아니다' 앞에서 서술어를 보충. 이/가가 붙음.", example: "물이 얼음이 되었다 → '얼음이'가 보어 / 나는 학생이 아니다" },
+      { label: "관형어·부사어·독립어", body: "관형어: 체언 수식(새 책의 '새') / 부사어: 용언 수식(빨리 달린다의 '빨리') / 독립어: 다른 성분과 독립(아, 정말!)", example: "" },
+    ],
+    questions: [
+      { q: "'나는 밥을 먹었다'에서 목적어는?", options: ["나는", "밥을", "먹었다", "는"], answer: 1, exp: "'밥을'은 동작(먹었다)의 대상으로 을/를이 붙은 목적어입니다." },
+      { q: "'물이 얼음이 되었다'에서 보어는?", options: ["물이", "얼음이", "되었다", "이"], answer: 1, exp: "'얼음이'는 '되다' 앞에서 서술어를 보충하는 보어입니다." },
+      { q: "'새 책을 빨리 읽었다'에서 부사어는?", options: ["새", "책을", "빨리", "읽었다"], answer: 2, exp: "'빨리'는 동사(읽었다)를 수식하는 부사어입니다. '새'는 체언을 수식하는 관형어입니다." },
+      { q: "서술어가 '되다·아니다'일 때 앞에 오는 성분은?", options: ["주어", "목적어", "보어", "관형어"], answer: 2, exp: "보어는 '되다·아니다' 앞에서 서술어의 의미를 보충하는 성분입니다." },
+    ]
+  },
+  {
+    category: "문장성분",
+    title: "문장의 종류 — 홑문장·겹문장",
+    youtube: null,
+    summary: "문장은 주어-서술어 관계의 수에 따라 홑문장과 겹문장으로 나뉩니다.",
+    content: [
+      { label: "홑문장", body: "주어-서술어 관계가 한 번인 문장", example: "꽃이 예쁘다 / 나는 밥을 먹었다" },
+      { label: "이어진 문장", body: "두 홑문장이 연결어미로 이어진 겹문장. 대등·종속으로 구분.", example: "대등: 봄이 오고 꽃이 핀다 / 종속: 비가 오면 길이 젖는다" },
+      { label: "안은 문장", body: "한 문장이 다른 문장 안에 절로 포함된 겹문장", example: "나는 [꽃이 예쁘다고] 생각한다 → 명사절 / [예쁜] 꽃이 폈다 → 관형절" },
+      { label: "절의 종류", body: "명사절(~음·~기) / 관형절(~는·~은·~을) / 부사절(~게·~도록) / 서술절 / 인용절(~고)", example: "명사절: 나는 [그가 착함]을 안다 / 관형절: [아름다운] 꽃" },
+    ],
+    questions: [
+      { q: "'봄이 오고 꽃이 핀다'는 어떤 문장인가?", options: ["홑문장", "대등하게 이어진 문장", "종속적으로 이어진 문장", "안은 문장"], answer: 1, exp: "두 홑문장이 '고'로 대등하게 이어진 겹문장입니다." },
+      { q: "'비가 오면 길이 젖는다'는 어떤 문장인가?", options: ["홑문장", "대등하게 이어진 문장", "종속적으로 이어진 문장", "안은 문장"], answer: 2, exp: "'오면'으로 조건 관계(종속)를 나타내며 이어진 겹문장입니다." },
+      { q: "'나는 꽃이 예쁘다고 생각한다'에서 안긴 절의 종류는?", options: ["명사절", "관형절", "부사절", "인용절"], answer: 3, exp: "'꽃이 예쁘다고'는 '고'로 끝나는 인용절입니다." },
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 3. 높임법
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "높임법",
+    title: "높임법 — 주체·객체·상대 높임",
+    youtube: null,
+    summary: "높임법은 누구를 높이느냐에 따라 3가지로 나뉩니다. 각각의 형식과 어휘를 구별해야 합니다.",
+    content: [
+      { label: "주체 높임법", body: "서술어의 주어(주체)를 높임. '-시-'를 사용하거나 특수 어휘 사용.", example: "선생님이 오신다(오다→오시다) / 할머니께서 주무신다(자다→주무시다)" },
+      { label: "객체 높임법", body: "목적어·부사어(객체)를 높임. 특수 어휘(드리다·여쭈다·모시다)로 표현.", example: "선물을 드렸다(주다→드리다) / 할머니를 모셨다 / 선생님께 여쭈었다" },
+      { label: "상대 높임법", body: "말을 듣는 상대방(청자)을 높이거나 낮춤. 종결어미로 표현.", example: "합쇼체(격식·최고높임): 합니다/가십니까 / 해요체(비격식): 가요/해요 / 해체(낮춤): 가/해" },
+      { label: "압존법", body: "높여야 할 사람이지만 더 높은 사람 앞에서는 낮추는 방법", example: "할아버지 앞에서 아버지를 말할 때: '아버지가 왔습니다'(아버지에게 '시'를 붙이지 않음)" },
+    ],
+    questions: [
+      { q: "'선생님이 오셨다'에서 높이는 대상은?", options: ["말하는 사람", "서술어의 주어(선생님)", "말 듣는 상대방", "목적어"], answer: 1, exp: "'-시-'를 사용하여 서술어의 주어(선생님)를 높이는 주체 높임법입니다." },
+      { q: "'할머니께 선물을 드렸다'에서 높이는 대상은?", options: ["주어", "서술어", "목적어·부사어(할머니)", "말 듣는 상대방"], answer: 2, exp: "'드리다'라는 특수 어휘로 목적어·부사어인 할머니를 높이는 객체 높임법입니다." },
+      { q: "상대 높임법을 나타내는 방법은?", options: ["'-시-' 사용", "특수 어휘(드리다·여쭈다) 사용", "종결어미로 표현", "부사격 조사 사용"], answer: 2, exp: "상대 높임법은 종결어미(합니다/해요/해 등)로 청자에 대한 높임 정도를 나타냅니다." },
+      { q: "객체 높임에 쓰이는 특수 어휘가 아닌 것은?", options: ["드리다", "여쭈다", "모시다", "오시다"], answer: 3, exp: "'오시다'는 '-시-'를 사용한 주체 높임입니다. 드리다·여쭈다·모시다가 객체 높임 어휘입니다." },
+    ]
+  },
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 4. 어휘·의미
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  {
+    category: "어휘·의미",
+    title: "단어의 의미 관계 — 유의어·반의어·상하어",
+    youtube: null,
+    summary: "단어들 사이의 의미 관계를 파악하면 어휘 문제와 독해 모두 도움이 됩니다.",
+    content: [
+      { label: "유의어(동의어)", body: "의미가 비슷한 단어들. 완전히 같지 않고 뉘앙스 차이가 있음.", example: "죽다=사망하다=숨지다 / 예쁘다=아름답다=고르다" },
+      { label: "반의어(대립어)", body: "의미가 서로 반대인 단어들. 상보·정도·방향 반의어로 구분.", example: "살다↔죽다(상보) / 크다↔작다(정도) / 가다↔오다(방향)" },
+      { label: "상하의어", body: "상의어: 넓은 개념(꽃) / 하의어: 좁은 개념(장미·튤립·국화)", example: "동물(상의어) → 개·고양이·새(하의어)" },
+      { label: "다의어·동음이의어", body: "다의어: 하나의 단어에 여러 의미(중심의미+주변의미) / 동음이의어: 소리는 같지만 전혀 다른 단어", example: "다의어: 손(신체→부하→솜씨) / 동음이의어: 배(신체≠과일≠선박)" },
+    ],
+    questions: [
+      { q: "'크다'와 '작다'처럼 정도의 차이로 대립하는 반의어 관계는?", options: ["상보 반의어", "정도 반의어", "방향 반의어", "상하의어"], answer: 1, exp: "크다↔작다처럼 중간값이 있는 정도 반의어입니다." },
+      { q: "'동물'과 '개'의 의미 관계는?", options: ["유의어", "반의어", "상하의어", "동음이의어"], answer: 2, exp: "'동물'은 넓은 개념의 상의어, '개'는 좁은 개념의 하의어입니다." },
+      { q: "'배'가 신체 부위와 과일을 동시에 의미하는 경우는?", options: ["다의어", "동음이의어", "유의어", "반의어"], answer: 1, exp: "소리는 같지만 서로 다른 별개의 단어이므로 동음이의어입니다. (다의어는 하나의 단어에서 의미가 파생된 경우)" },
+    ]
+  },
+  {
+    category: "어휘·의미",
+    title: "올바른 표현 — 맞춤법·띄어쓰기 핵심",
+    youtube: null,
+    summary: "자주 틀리는 맞춤법과 띄어쓰기를 정리합니다. 수능 언어와 매체 영역에서도 출제됩니다.",
+    content: [
+      { label: "자주 틀리는 맞춤법", body: "구별해서 외워야 하는 핵심 쌍", example: "안되다(형용사)↔안 되다(부정) / 되다↔돼다(×) / 이따가↔있다가 / 어떻게↔어떡해" },
+      { label: "사이시옷", body: "두 단어가 합쳐질 때 뒷소리가 된소리나는 경우 사이시옷 표기", example: "냇가(내+가) / 빗소리(비+소리) / 핏줄(피+줄) / 그러나: 개수(○) 갯수(×)" },
+      { label: "띄어쓰기 핵심", body: "의존명사는 띄어 쓰고, 조사는 붙여 씀", example: "할 수 있다(수=의존명사, 띄어씀) / 먹을만큼(×) → 먹을 만큼(○)" },
+      { label: "어문 규정 핵심", body: "두음법칙·된소리 표기·외래어 표기 핵심 정리", example: "이율(×)→이율(○) / 낙원(○) / 렌즈(○) 렌즈(×)" },
+    ],
+    questions: [
+      { q: "다음 중 맞춤법이 맞는 것은?", options: ["않되다", "안 되다", "않 되다", "안되다(모든 경우)"], answer: 1, exp: "'안 되다'는 '아니 되다'의 준말로 띄어 씁니다. '않되다'는 없는 말입니다." },
+      { q: "다음 중 사이시옷이 올바르게 쓰인 것은?", options: ["갯수", "냇가", "전셋집(전세+집)", "두가지"], answer: 1, exp: "'냇가'는 '내+가'가 합쳐질 때 된소리가 나므로 사이시옷을 씁니다. '갯수'는 틀리고 '개수'가 맞습니다." },
+      { q: "'할 수 있다'에서 '수'를 띄어 쓰는 이유는?", options: ["'수'가 명사이기 때문에", "'수'가 의존명사이기 때문에", "'수'가 조사이기 때문에", "'수'가 부사이기 때문에"], answer: 1, exp: "'수'는 의존명사로, 의존명사는 앞말과 띄어 씁니다." },
+    ]
+  },
+];
+
+// =====================================================================
+// 앱 컴포넌트
+// =====================================================================
+
+const ADMIN_PASSWORD = "wonjangnimAdmin2025!";
+
+const TAB_INFO = {
+  lit:  { label: "📖 문학 개념", color: "#3d6b52", bg: "#e8f4f0", concepts: LIT_CONCEPTS },
+  gram: { label: "✏️ 문법 개념", color: "#2a4d8a", bg: "#e8eef8", concepts: GRAM_CONCEPTS },
+};
+
+const CATEGORIES_LIT  = [...new Set(LIT_CONCEPTS.map(c => c.category))];
+const CATEGORIES_GRAM = [...new Set(GRAM_CONCEPTS.map(c => c.category))];
+
+function App() {
+  const [tab, setTab]           = useState("lit");
+  const [nameInput, setNameInput] = useState("");
+  const [studentName, setStudentName] = useState("");
+  const [screen, setScreen]     = useState("home"); // home | learn | admin
+  const [selectedCat, setSelectedCat] = useState(null);
+  const [selectedConcept, setSelectedConcept] = useState(null);
+  const [answers, setAnswers]   = useState({});
+  const [revealed, setRevealed] = useState({});
+  const [adminInput, setAdminInput] = useState("");
+  const [adminError, setAdminError] = useState(false);
+  const [results, setResults]   = useState({});
+
+  const info = TAB_INFO[tab];
+  const cats = tab === "lit" ? CATEGORIES_LIT : CATEGORIES_GRAM;
+
+  // storage
+  async function loadResults() {
+    try {
+      const r = await window.storage?.get("concept-results", true);
+      if (r) setResults(JSON.parse(r.value));
+    } catch {}
+  }
+  async function saveResult(conceptTitle, ansMap, questions) {
+    try {
+      let cur = {};
+      try { const r = await window.storage?.get("concept-results", true); if (r) cur = JSON.parse(r.value); } catch {}
+      if (!cur[studentName]) cur[studentName] = [];
+      const score = questions.filter((q,i) => ansMap[i] === q.answer).length;
+      const wrong = questions.map((q,i) => ({ q: q.q, chosen: ansMap[i], correct: q.answer, ok: ansMap[i] === q.answer }));
+      cur[studentName].push({ title: conceptTitle, tab, date: new Date().toLocaleDateString("ko-KR"), score, total: questions.length, wrong });
+      await window.storage?.set("concept-results", JSON.stringify(cur), true);
+      setResults({ ...cur });
+    } catch {}
+  }
+
+  const cKey = selectedConcept ? selectedConcept.title : "";
+  const qAns = answers[cKey] || {};
+  const qRev = revealed[cKey] || {};
+  const allAnswered = selectedConcept ? selectedConcept.questions.every((_,i) => qAns[i] !== undefined) : false;
+  const allRev = selectedConcept ? selectedConcept.questions.every((_,i) => qRev[i]) : false;
+  const score = selectedConcept ? selectedConcept.questions.filter((q,i) => qAns[i] === q.answer).length : 0;
+
+  function handleAnswer(qi, oi) {
+    if (qRev[qi]) return;
+    setAnswers(p => ({ ...p, [cKey]: { ...p[cKey], [qi]: oi } }));
+  }
+  function revealAll() {
+    const nr = {}; selectedConcept.questions.forEach((_,i) => nr[i]=true);
+    setRevealed(p => ({ ...p, [cKey]: nr }));
+    saveResult(cKey, qAns, selectedConcept.questions);
+  }
+  function revealOne(qi) {
+    setRevealed(p => ({ ...p, [cKey]: { ...p[cKey], [qi]: true } }));
+  }
+
+  // ── HOME ──
+  if (screen === "home") return (
+    <div style={{ minHeight:"100vh", background:"linear-gradient(160deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'Noto Sans KR',sans-serif" }}>
+      <div style={{ textAlign:"center", marginBottom:36 }}>
+        <div style={{ fontSize:13, letterSpacing:5, color:"#7eb8d4", marginBottom:14, fontFamily:"'Noto Serif KR',serif" }}>국어 개념 학습</div>
+        <div style={{ fontSize:32, fontWeight:700, color:"#fff", marginBottom:8, fontFamily:"'Noto Serif KR',serif", lineHeight:1.2 }}>문학 · 문법<br/>개념 완성</div>
+        <div style={{ fontSize:13, color:"#7eb8d4" }}>중등 핵심 → 고등 연결</div>
+      </div>
+      <div style={{ width:"100%", maxWidth:360, background:"rgba(255,255,255,0.07)", borderRadius:20, padding:28, border:"1px solid rgba(255,255,255,0.12)", backdropFilter:"blur(10px)" }}>
+        <div style={{ fontSize:13, color:"#aac8e0", marginBottom:10 }}>이름을 입력하고 시작하세요</div>
+        <input value={nameInput} onChange={e=>setNameInput(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter"&&nameInput.trim()){ setStudentName(nameInput.trim()); loadResults(); setScreen("learn"); }}}
+          placeholder="예) 김민준"
+          style={{ width:"100%", padding:"13px 16px", background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.2)", borderRadius:10, color:"#fff", fontSize:15, marginBottom:12 }} />
+        <button onClick={()=>{ if(nameInput.trim()){ setStudentName(nameInput.trim()); loadResults(); setScreen("learn"); }}}
+          style={{ width:"100%", padding:14, background: nameInput.trim()?"#4a9fd4":"rgba(255,255,255,0.1)", color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700, transition:"all 0.2s" }}>
+          시작하기 →
+        </button>
+        <button onClick={()=>setScreen("adminLogin")} style={{ width:"100%", marginTop:10, padding:10, background:"none", border:"none", color:"rgba(255,255,255,0.3)", fontSize:12 }}>관리자 로그인</button>
+      </div>
+    </div>
+  );
+
+  // ── ADMIN LOGIN ──
+  if (screen === "adminLogin") return (
+    <div style={{ minHeight:"100vh", background:"#1a1a2e", display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'Noto Sans KR',sans-serif" }}>
+      <div style={{ width:"100%", maxWidth:340, background:"#fff", borderRadius:16, padding:28 }}>
+        <div style={{ fontSize:18, fontWeight:700, marginBottom:20, textAlign:"center" }}>🔐 관리자 로그인</div>
+        <input type="password" value={adminInput} onChange={e=>setAdminInput(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter"){ if(adminInput===ADMIN_PASSWORD){ loadResults(); setScreen("admin"); } else setAdminError(true); }}}
+          placeholder="비밀번호" style={{ width:"100%", padding:"13px 16px", border:`1.5px solid ${adminError?"#e74c3c":"#ddd"}`, borderRadius:10, fontSize:15, marginBottom:8 }} />
+        {adminError && <div style={{ color:"#e74c3c", fontSize:12, marginBottom:8 }}>비밀번호가 틀렸습니다.</div>}
+        <button onClick={()=>{ if(adminInput===ADMIN_PASSWORD){ loadResults(); setScreen("admin"); } else setAdminError(true); }}
+          style={{ width:"100%", padding:14, background:"#3d6b52", color:"#fff", border:"none", borderRadius:10, fontSize:15, fontWeight:700 }}>확인</button>
+        <button onClick={()=>setScreen("home")} style={{ width:"100%", marginTop:8, padding:12, background:"none", border:"1px solid #ddd", borderRadius:10, color:"#888", fontSize:13 }}>돌아가기</button>
+      </div>
+    </div>
+  );
+
+  // ── ADMIN ──
+  if (screen === "admin") {
+    const students = Object.keys(results);
+    return (
+      <div style={{ minHeight:"100vh", background:"#f4f4f4", fontFamily:"'Noto Sans KR',sans-serif", paddingBottom:60 }}>
+        <div style={{ background:"#fff", padding:"16px 20px", display:"flex", justifyContent:"space-between", alignItems:"center", borderBottom:"1px solid #eee" }}>
+          <div style={{ fontSize:17, fontWeight:700 }}>📊 학생 학습 현황</div>
+          <button onClick={()=>setScreen("home")} style={{ background:"none", border:"1px solid #ddd", color:"#888", padding:"7px 14px", borderRadius:8, fontSize:12 }}>로그아웃</button>
+        </div>
+        <div style={{ display:"flex", gap:10, padding:"14px 14px 0", flexWrap:"wrap" }}>
+          {[
+            { label:"참여 학생", value:students.length+"명" },
+            { label:"총 학습 수", value:students.reduce((a,s)=>a+(results[s]?.length||0),0)+"회" },
+          ].map((s,i)=>(
+            <div key={i} style={{ flex:"1 1 100px", background:"#fff", borderRadius:12, padding:"12px 16px", boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
+              <div style={{ fontSize:11, color:"#888", marginBottom:4 }}>{s.label}</div>
+              <div style={{ fontSize:22, fontWeight:700, color:"#3d6b52" }}>{s.value}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding:14 }}>
+          {students.length===0 && <div style={{ color:"#bbb", fontSize:13, padding:20, textAlign:"center" }}>아직 데이터가 없습니다.</div>}
+          {students.map(name=>{
+            const recs = results[name]||[];
+            return (
+              <div key={name} style={{ background:"#fff", borderRadius:12, padding:16, marginBottom:12, boxShadow:"0 2px 8px rgba(0,0,0,0.06)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:10 }}>
+                  <div style={{ fontSize:15, fontWeight:700 }}>{name}</div>
+                  <div style={{ fontSize:12, color:"#3d6b52" }}>{recs.length}개 학습 완료</div>
+                </div>
+                {recs.map((rec,ri)=>(
+                  <div key={ri} style={{ background:"#f8f8f8", borderRadius:8, padding:10, marginBottom:8 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                      <span style={{ fontSize:12, color:"#888" }}>{rec.date} · {rec.tab==="lit"?"문학":"문법"} · {rec.title}</span>
+                      <span style={{ fontSize:13, fontWeight:700, color: rec.score===rec.total?"#3d6b52": rec.score>=rec.total/2?"#e08a2a":"#e74c3c" }}>{rec.score}/{rec.total}</span>
+                    </div>
+                    {rec.wrong.filter(w=>!w.ok).map((w,wi)=>(
+                      <div key={wi} style={{ fontSize:11, color:"#e07070", marginBottom:3, lineHeight:1.5 }}>
+                        ✗ {w.q.length>30?w.q.slice(0,30)+"…":w.q} (선택:{(w.chosen||0)+1}번 · 정답:{w.correct+1}번)
+                      </div>
+                    ))}
+                    {rec.wrong.every(w=>w.ok) && <div style={{ fontSize:11, color:"#3d6b52" }}>✓ 전체 정답!</div>}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ── LEARN ──
+  return (
+    <div style={{ minHeight:"100vh", background:"#f4f1ec", fontFamily:"'Noto Sans KR',sans-serif", paddingBottom:60 }}>
+      {/* Header */}
+      <div style={{ background:"#1a1a2e", padding:"13px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+        <div>
+          <div style={{ fontSize:11, color:"#7eb8d4", letterSpacing:2 }}>국어 개념 학습</div>
+          <div style={{ fontSize:15, fontWeight:700, color:"#fff" }}>{studentName} 님</div>
+        </div>
+        <button onClick={()=>{ setSelectedCat(null); setSelectedConcept(null); setScreen("home"); }}
+          style={{ background:"none", border:"1px solid rgba(255,255,255,0.2)", color:"#aaa", padding:"7px 12px", borderRadius:8, fontSize:12 }}>나가기</button>
+      </div>
+
+      {/* Tab */}
+      <div style={{ background:"#fff", display:"flex", borderBottom:"2px solid #ebebeb" }}>
+        {Object.entries(TAB_INFO).map(([key,t])=>(
+          <button key={key} onClick={()=>{ setTab(key); setSelectedCat(null); setSelectedConcept(null); }}
+            style={{ flex:1, padding:"14px 8px", background:"none", border:"none", borderBottom: tab===key?`3px solid ${t.color}`:"3px solid transparent", fontSize:14, color: tab===key?t.color:"#aaa", fontWeight: tab===key?700:400 }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ maxWidth:600, margin:"0 auto", padding:"16px 14px" }}>
+
+        {/* 개념 미선택: 카테고리 목록 */}
+        {!selectedConcept && (
+          <div className="fade">
+            {selectedCat && (
+              <button onClick={()=>setSelectedCat(null)} style={{ background:"none", border:"none", color:info.color, fontSize:13, fontWeight:600, marginBottom:14, padding:0 }}>← 카테고리 목록</button>
+            )}
+            {!selectedCat ? (
+              <>
+                <div style={{ fontSize:13, color:"#888", marginBottom:14 }}>카테고리를 선택하세요</div>
+                {cats.map(cat=>{
+                  const catConcepts = info.concepts.filter(c=>c.category===cat);
+                  const done = catConcepts.filter(c => results[studentName]?.some(r=>r.title===c.title)).length;
+                  return (
+                    <button key={cat} onClick={()=>setSelectedCat(cat)}
+                      style={{ width:"100%", padding:"18px 20px", background:"#fff", border:`1.5px solid ${info.color}33`, borderRadius:14, marginBottom:10, display:"flex", alignItems:"center", justifyContent:"space-between", boxShadow:"0 2px 8px rgba(0,0,0,0.04)", transition:"all 0.15s" }}>
+                      <div style={{ textAlign:"left" }}>
+                        <div style={{ fontSize:16, fontWeight:700, color:info.color }}>{cat}</div>
+                        <div style={{ fontSize:12, color:"#aaa", marginTop:3 }}>개념 {catConcepts.length}개</div>
+                      </div>
+                      <div style={{ fontSize:12, color: done>0?info.color:"#ccc", fontWeight:700 }}>
+                        {done>0?`${done}/${catConcepts.length} 완료`:"미시작"} →
+                      </div>
+                    </button>
+                  );
+                })}
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize:13, color:"#888", marginBottom:14 }}>개념을 선택하세요</div>
+                {info.concepts.filter(c=>c.category===selectedCat).map((c,i)=>{
+                  const done = results[studentName]?.find(r=>r.title===c.title);
+                  return (
+                    <button key={i} onClick={()=>setSelectedConcept(c)}
+                      style={{ width:"100%", padding:"16px 18px", background:"#fff", border:`1.5px solid ${done?info.color+"66":"#ebebeb"}`, borderRadius:12, marginBottom:10, display:"flex", alignItems:"center", gap:14, boxShadow:"0 2px 6px rgba(0,0,0,0.04)", transition:"all 0.15s" }}>
+                      <div style={{ textAlign:"left", flex:1 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:"#1a1a1a", marginBottom:4 }}>{c.title}</div>
+                        <div style={{ fontSize:12, color:"#aaa" }}>{c.summary.length>40?c.summary.slice(0,40)+"…":c.summary}</div>
+                      </div>
+                      <div style={{ textAlign:"right", flexShrink:0 }}>
+                        {done && <div style={{ fontSize:12, color:info.color, fontWeight:700 }}>{done.score}/{done.total}</div>}
+                        <div style={{ fontSize:18, color:"#ddd" }}>→</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* 개념 선택됨 */}
+        {selectedConcept && (
+          <div className="fade">
+            <button onClick={()=>setSelectedConcept(null)} style={{ background:"none", border:"none", color:info.color, fontSize:13, fontWeight:600, marginBottom:14, padding:0 }}>← 목록으로</button>
+
+            {/* 개념 헤더 */}
+            <div style={{ background:info.bg, borderRadius:14, padding:"16px 18px", marginBottom:14, borderLeft:`4px solid ${info.color}` }}>
+              <div style={{ fontSize:11, color:info.color, fontWeight:700, letterSpacing:1, marginBottom:4 }}>{selectedConcept.category}</div>
+              <div style={{ fontSize:17, fontWeight:700, color:"#1a1a1a", marginBottom:6, fontFamily:"'Noto Serif KR',serif" }}>{selectedConcept.title}</div>
+              <div style={{ fontSize:13, color:"#555", lineHeight:1.7 }}>{selectedConcept.summary}</div>
+            </div>
+
+            {/* 유튜브 버튼 */}
+            {selectedConcept.youtube && (
+              <a href={selectedConcept.youtube} target="_blank" rel="noopener noreferrer"
+                style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 16px", background:"#ff4444", borderRadius:10, marginBottom:14, textDecoration:"none" }}>
+                <span style={{ fontSize:20 }}>▶</span>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>영상으로 배우기</div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.8)" }}>5~10분 강의 영상</div>
+                </div>
+              </a>
+            )}
+
+            {/* 개념 설명 */}
+            <div style={{ marginBottom:20 }}>
+              {selectedConcept.content.map((item,i)=>(
+                <div key={i} style={{ background:"#fff", borderRadius:10, padding:"14px 16px", marginBottom:8, border:"1px solid #ebebeb" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:info.color, marginBottom:6 }}>{item.label}</div>
+                  <div style={{ fontSize:13, color:"#333", lineHeight:1.7, marginBottom: item.example?6:0 }}>{item.body}</div>
+                  {item.example && (
+                    <div style={{ fontSize:12, color:"#666", background:info.bg, borderRadius:6, padding:"7px 10px", lineHeight:1.7 }}>
+                      예) {item.example}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* 확인문제 */}
+            <div style={{ fontSize:14, fontWeight:700, color:"#1a1a1a", marginBottom:12, borderTop:"2px solid #ebebeb", paddingTop:16 }}>
+              ✅ 확인 문제
+            </div>
+            {selectedConcept.questions.map((q,qi)=>{
+              const chosen = qAns[qi];
+              const isRev  = qRev[qi];
+              const ok     = chosen === q.answer;
+              return (
+                <div key={qi} style={{ background:"#fff", borderRadius:12, padding:"15px 14px", marginBottom:10, border: isRev?`1.5px solid ${ok?"#3d6b52":"#e74c3c"}`:"1.5px solid #ebebeb", boxShadow:"0 2px 6px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:"#1a1a1a", marginBottom:10, lineHeight:1.65 }}>
+                    <span style={{ display:"inline-block", background:info.color, color:"#fff", borderRadius:4, padding:"1px 8px", fontSize:11, marginRight:7 }}>{qi+1}</span>
+                    {q.q}
+                  </div>
+                  {q.options.map((opt,oi)=>{
+                    let bg="#f9f9f9", border="1px solid #ebebeb", color="#333";
+                    if(isRev){
+                      if(oi===q.answer){ bg=info.bg; border=`1.5px solid ${info.color}`; color=info.color; }
+                      else if(chosen===oi){ bg="#fdecea"; border="1.5px solid #e74c3c"; color="#c0392b"; }
+                    } else if(chosen===oi){ bg=info.bg; border=`1.5px solid ${info.color}`; color=info.color; }
+                    return (
+                      <button key={oi} disabled={isRev} onClick={()=>handleAnswer(qi,oi)}
+                        style={{ width:"100%", padding:"9px 12px", background:bg, border, borderRadius:7, marginBottom:6, color, fontSize:13, lineHeight:1.5, display:"flex", gap:8, alignItems:"flex-start", transition:"all 0.15s" }}>
+                        <span style={{ fontWeight:700, minWidth:16, flexShrink:0, color: isRev&&oi===q.answer?info.color: isRev&&chosen===oi?"#e74c3c":"#bbb" }}>
+                          {isRev&&oi===q.answer?"✓": isRev&&chosen===oi?"✗":`${oi+1}`}
+                        </span>
+                        <span>{opt}</span>
+                      </button>
+                    );
+                  })}
+                  {isRev && (
+                    <div style={{ marginTop:10, padding:"10px 12px", background:info.bg, borderRadius:7, fontSize:12, color:"#444", lineHeight:1.7, borderLeft:`3px solid ${info.color}` }}>
+                      <strong style={{ color:info.color }}>해설</strong> {q.exp}
+                    </div>
+                  )}
+                  {!isRev && chosen!==undefined && (
+                    <button onClick={()=>revealOne(qi)} style={{ marginTop:8, padding:"7px 14px", background:"none", border:`1.5px solid ${info.color}`, borderRadius:7, color:info.color, fontSize:12, fontWeight:600 }}>정답 확인</button>
+                  )}
+                </div>
+              );
+            })}
+
+            {!allRev && (
+              <button disabled={!allAnswered} onClick={revealAll}
+                style={{ width:"100%", padding:15, background: allAnswered?info.color:"#ccc", color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700, marginTop:4, transition:"all 0.2s" }}>
+                {allAnswered?"전체 채점하기":"모든 문제를 풀어주세요"}
+              </button>
+            )}
+            {allRev && (
+              <div style={{ background: score===selectedConcept.questions.length?info.bg:"#fff8e8", border:`2px solid ${score===selectedConcept.questions.length?info.color:"#e08a2a"}`, borderRadius:14, padding:22, textAlign:"center", marginTop:8 }}>
+                <div style={{ fontSize:32, marginBottom:8 }}>{score===selectedConcept.questions.length?"🎉":"📖"}</div>
+                <div style={{ fontSize:22, fontWeight:700, marginBottom:6 }}>{score} / {selectedConcept.questions.length} 정답</div>
+                <div style={{ fontSize:13, color:"#666", marginBottom:16 }}>
+                  {score===selectedConcept.questions.length?"완벽합니다! 다음 개념으로 넘어가세요.":"해설을 꼼꼼히 읽고 다시 도전해보세요!"}
+                </div>
+                <button onClick={()=>{ setSelectedConcept(null); }}
+                  style={{ padding:"11px 22px", background:info.color, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700 }}>
+                  다른 개념 학습하기 →
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(React.createElement(App));
+</script>
+</body>
+</html>
