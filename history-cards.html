@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>프랑스 혁명과 나폴레옹 암기카드 (중2 역사)</title>
+<style>
+  :root { --ink:#222; --line:#6b4fa0; --muted:#666; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif; color:var(--ink); background:#fff; }
+  /* ---------- 화면용 ---------- */
+  .screen { max-width:560px; margin:0 auto; padding:16px; }
+  .screen h1 { font-size:20px; margin:4px 0 2px; color:var(--line); }
+  .goal { font-size:13px; color:var(--muted); margin:0 0 12px; line-height:1.5; }
+  .bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .bar button { border:1.5px solid var(--line); background:#fff; color:var(--line); border-radius:8px; padding:7px 11px; font-size:14px; cursor:pointer; }
+  .bar button.on { background:var(--line); color:#fff; }
+  .card { position:relative; min-height:230px; border:2px solid var(--line); border-radius:14px; padding:22px 20px; display:flex; flex-direction:column; justify-content:center; cursor:pointer; user-select:none; }
+  .card .tag { position:absolute; top:10px; left:14px; font-size:12px; color:var(--line); font-weight:700; }
+  .card .num { position:absolute; top:10px; right:14px; font-size:12px; color:var(--muted); }
+  .card .txt { font-size:19px; line-height:1.55; text-align:center; white-space:pre-line; }
+  .card.back { border-style:dashed; }
+  .card.back .txt { font-size:17px; text-align:left; }
+  .hint { text-align:center; font-size:12px; color:var(--muted); margin:8px 0; }
+  .nav { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .nav button { border:1.5px solid var(--ink); background:#fff; border-radius:8px; padding:9px 18px; font-size:15px; cursor:pointer; }
+  .marks { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .marks button { border:1.5px solid #999; background:#fff; border-radius:8px; padding:7px 12px; font-size:14px; cursor:pointer; }
+  .flow { font-size:13px; border:1.5px solid var(--line); border-radius:10px; padding:10px; margin-top:16px; line-height:1.7; }
+  .print { display:none; }
+  /* ---------- 인쇄용 (A4, 2×5, 양면 긴 쪽 넘김) ---------- */
+  @page { size:A4; margin:10mm; }
+  @media print {
+    .screen { display:none; }
+    .print { display:block; }
+  }
+  .sheet { width:190mm; height:277mm; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(5,1fr); page-break-after:always; break-after:page; }
+  .sheet:last-child { page-break-after:auto; }
+  .pc { border:0.6px dashed #999; position:relative; padding:8mm 7mm 6mm; display:flex; flex-direction:column; justify-content:center; }
+  .pc .tag { position:absolute; top:3mm; left:4mm; font-size:8pt; color:var(--line); font-weight:700; }
+  .pc .num { position:absolute; top:3mm; right:4mm; font-size:8pt; color:#888; }
+  .pc .txt { white-space:pre-line; line-height:1.45; }
+  .pc.q .txt { font-size:12pt; text-align:center; font-weight:600; }
+  .pc.a .txt { font-size:10.5pt; }
+  .pc.a .txt b { color:var(--line); }
+  .cover { width:190mm; height:277mm; page-break-after:always; break-after:page; padding:10mm 6mm; }
+  .cover h1 { font-size:20pt; border-bottom:2px solid var(--line); padding-bottom:4mm; color:var(--line); }
+  .cover h2 { font-size:12pt; margin:8mm 0 2mm; }
+  .cover p, .cover li { font-size:11pt; line-height:1.7; }
+  .cover .box { border:1.5px solid var(--line); border-radius:4mm; padding:4mm 6mm; margin-top:4mm; }
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <h1>프랑스 혁명과 나폴레옹 암기카드</h1>
+  <p class="goal">중2 역사 Ⅴ-1 (교과서 140~142쪽)<br>학습 목표: ① 프랑스 혁명의 배경과 전개 과정을 설명할 수 있다. ② 프랑스 혁명이 국민 국가 형성에 끼친 영향을 설명할 수 있다.</p>
+  <div class="bar" id="filters"></div>
+  <div class="bar">
+    <button id="shuffle">섞기</button>
+    <button id="reverse">답→질문</button>
+    <button id="onlyWrong">모르는 카드만</button>
+  </div>
+  <div class="card" id="card"><span class="tag" id="tag"></span><span class="num" id="num"></span><div class="txt" id="txt"></div></div>
+  <div class="hint">카드를 누르면 뒤집혀요</div>
+  <div class="marks"><button id="know">✔ 알아요</button><button id="dont">✘ 다시 볼래요</button></div>
+  <div class="nav"><button id="prev">◀ 이전</button><span id="pos"></span><button id="next">다음 ▶</button></div>
+  <div class="flow"><b>흐름 한 줄:</b> 삼부회(1789.5) → 테니스코트의 서약(1789.6) → 바스티유 감옥 습격(1789.7.14) → 인권 선언(1789.8.26) → 입법 의회 → 국민 공회·루이 16세 처형(1793.1) → 총재 정부 → 통령 정부 → 나폴레옹 황제 즉위(1804)<br><b>의회·정부 순서:</b> 국민 의회 → 입법 의회 → 국민 공회 → 총재 정부 → 통령 정부 (국-입-공-총-통)<br><b>기간:</b> 국민 의회 1789~1791 · 입법 의회 1791~1792 · 국민 공회 1792~1795 · 총재 정부 1795~1799 · 통령 정부 1799~</div>
+</div>
+
+<div class="print" id="print"></div>
+
+<script>
+const CARDS = [
+ ["혁명의 배경","구제도에서 높은 관직·토지를 독점하고 세금을 면제받은 특권 신분은?","<b>제1신분(성직자)</b>과 <b>제2신분(귀족)</b>\n전 인구의 약 2%"],
+ ["혁명의 배경","전 인구의 98%를 차지하며 많은 세금을 내면서도 정치 참여가 제한된 신분은?","<b>제3신분(평민)</b>\n시민 계급, 농민, 노동자"],
+ ["혁명의 배경","시민 계급이란?","도시에 거주하며 주로 <b>상공업·금융·법률</b> 등에 종사한 계층\n→ 부당한 사회 제도를 비판함"],
+ ["혁명의 배경","계몽사상이란?","<b>이성</b>의 힘으로 세상을 이해하고 사회를 개혁할 수 있다고 믿는 사상"],
+ ["혁명의 배경","시민 계급이 자유롭고 평등한 사회를 꿈꾸게 된 두 가지 영향은?","① <b>계몽사상</b>\n② <b>미국 혁명</b>"],
+ ["혁명의 시작","루이 16세가 삼부회를 소집한 이유는?","계속된 <b>전쟁</b>과 <b>왕실의 사치</b>로 어려워진 <b>재정</b> 문제를 해결하기 위해"],
+ ["혁명의 시작","삼부회(1789.5)에서 신분 대표들이 대립한 쟁점은?","<b>표결 방식</b>\n· 제1·2신분: 신분별 표결\n· 제3신분: 머릿수에 따른 표결"],
+ ["혁명의 시작","제3신분 대표들이 주장이 받아들여지지 않자 따로 구성한 의회는?","<b>국민 의회</b>"],
+ ["혁명의 시작","테니스코트의 서약(1789.6)의 내용은?","국민 의회가 <b>새 헌법이 제정될 때까지 해산하지 않겠다</b>고 서약함"],
+ ["혁명의 시작","바스티유 감옥 습격(1789.7.14)의 계기와 의미는?","국왕이 국민 의회를 <b>탄압</b>하려 하자 분노한 파리 시민이\n<b>전제 왕정의 상징</b>인 바스티유 감옥을 습격\n→ 혁명이 전국으로 확산"],
+ ["혁명의 시작","1789년 파리 여성들이 베르사유 궁전으로 행진한 이유와 결과는?","<b>식량 문제</b> 해결과 정치 개혁 요구\n→ 국왕 일가를 파리로 데려옴"],
+ ["인권 선언","국민 의회가 농민의 불만을 달래기 위해 한 일은?","<b>봉건제 폐지</b>를 선언하고\n「인간과 시민의 권리 선언(인권 선언)」을 발표(1789.8)"],
+ ["인권 선언","인권 선언 제1조~제3조의 핵심은?","1조: 인간은 <b>자유</b>롭고 <b>평등</b>한 권리를 갖고 태어남\n2조: 자유, 소유권, 안전, 압제에 대한 저항\n3조: 모든 <b>주권은 국민</b>에게 있음"],
+ ["인권 선언","인권 선언 제17조에서 '신성한 권리'라고 한 것은?","<b>소유권</b>"],
+ ["인권 선언","국민 의회가 제정한 헌법(1791)의 두 가지 특징은?","① <b>입헌 군주제</b>\n② 재산에 따른 <b>제한 선거제</b>\n→ 이 헌법에 따라 <b>입법 의회</b> 구성"],
+ ["인권 선언","입헌 군주제란?","군주의 권력이 <b>헌법</b>에 의해 제약을 받는 정치 체제"],
+ ["혁명의 과격화","입법 의회가 오스트리아·프로이센에 전쟁을 선포한 이유는?","혁명이 자국으로 번질 것을 우려한 두 나라가 <b>프랑스를 위협</b>했기 때문\n→ <b>혁명 전쟁</b> 시작"],
+ ["혁명의 과격화","국민 공회가 구성된 과정은?","전쟁 패배·<b>물가 상승</b> → 과격해진 파리 민중이 국왕 퇴위 요구하며 <b>왕궁 습격</b>\n→ 왕권 정지, 입법 의회 대신 <b>국민 공회</b> 구성"],
+ ["혁명의 과격화","국민 공회가 한 두 가지 일은?","① <b>공화정</b> 선포\n② 외국으로 탈출하려 한 <b>루이 16세 처형</b>(1793.1)"],
+ ["혁명의 과격화","루이 16세 처형 이후 주변국의 반응은?","놀란 <b>영국·오스트리아</b> 등이 <b>동맹</b>을 맺고 프랑스를 공격"],
+ ["혁명의 과격화","로베스피에르 등 급진파가 실시한 정치는?","혁명에 반대하는 사람들을 탄압한 <b>공포 정치</b>"],
+ ["혁명의 과격화","급진파가 제정한 헌법의 주요 내용은?","<b>공화제</b>와 <b>성인 남성의 보통 선거권</b> 보장"],
+ ["혁명의 과격화","총재 정부가 수립된 과정은?","급격한 사회 변화에 대한 불만 → <b>쿠데타</b>로 로베스피에르 등 처형\n→ <b>다섯 명의 총재</b>가 이끄는 총재 정부 수립"],
+ ["혁명의 과격화","'상퀼로트'의 뜻은?","귀족의 반바지 '퀼로트'를 입지 않은 사람\n→ 긴 바지를 입는 <b>민중</b>"],
+ ["혁명의 과격화","프랑스 혁명기 의회·정부의 순서는?","<b>국민 의회 → 입법 의회 → 국민 공회 → 총재 정부 → 통령 정부</b>\n(국-입-공-총-통)"],
+ ["기구별 정리","국민 의회(1789~1791) 시기의 시험 핵심 키워드는?","<b>테니스코트의 서약</b>(1789.6)\n<b>바스티유 감옥 습격</b>(1789.7.14)\n<b>봉건제 폐지 선언</b> → <b>인권 선언</b>(1789.8.26)\n<b>1791년 헌법</b>(입헌 군주제·제한 선거)"],
+ ["기구별 정리","[함정] 인권 선언은 어느 기구 시기에 발표되었나?","<b>국민 의회</b> 시기 (1789.8)\n※ 입법 의회·국민 공회 아님!"],
+ ["기구별 정리","입법 의회(1791~1792) 시기의 핵심 키워드는?","1791년 헌법에 따라 구성\n<b>입헌 군주정</b> — 루이 16세는 <b>왕위 유지</b>\n<b>오스트리아에 선전 포고</b>(1792.4) → 혁명 전쟁"],
+ ["기구별 정리","[함정] 입법 의회 시기에 루이 16세는 왕이었나?","<b>그렇다.</b> 입헌 군주정이라 왕위를 유지함\n→ 전쟁이 불리해지자 파리 민중이 왕궁(튈르리 궁전)을 습격(1792.8)하면서 <b>왕권 정지</b>"],
+ ["기구별 정리","국민 공회(1792~1795) 시기의 핵심 키워드는?","1792.9 소집 → 왕정 폐지, <b>공화정</b> 수립(제1공화정)\n<b>루이 16세 처형</b>(1793.1)\n<b>로베스피에르의 공포 정치</b>"],
+ ["기구별 정리","로베스피에르가 몰락한 해와 그 의미는?","<b>1794년</b> 쿠데타로 체포·처형(심화: 테르미도르 반동)\n→ 공포 정치 종료"],
+ ["기구별 정리","총재 정부(1795~1799) 시기의 핵심 키워드는?","1795년 헌법으로 수립\n<b>5명의 총재</b>가 행정권 행사(권력 집중 방지)\n<b>정치적 불안정</b> 지속 → <b>나폴레옹</b> 부상"],
+ ["기구별 정리","통령 정부는 언제, 누가 수립했나?","<b>1799년</b> 나폴레옹이 쿠데타로 총재 정부를 무너뜨리고 수립\n→ 나폴레옹 <b>제1통령</b> 취임"],
+ ["나폴레옹","나폴레옹이 명성을 얻은 계기와 권력을 잡은 방법은?","<b>이탈리아·이집트 원정</b>에서 승리해 명성\n→ <b>쿠데타</b>로 총재 정부를 무너뜨리고 <b>통령 정부</b> 수립, 제1통령 취임"],
+ ["나폴레옹","제1통령 나폴레옹의 개혁 세 가지는?","① 국가 <b>재정</b> 정비\n② <b>국민 교육 제도</b> 도입\n③ 『<b>나폴레옹 법전</b>』 편찬"],
+ ["나폴레옹","『나폴레옹 법전』의 특징은?","<b>자유, 평등, 사유 재산</b>의 원칙 등 프랑스 혁명의 성과를 반영\n→ <b>근대 법전의 기초</b>"],
+ ["나폴레옹","나폴레옹이 황제에 즉위한 방법과 연도는?","<b>국민 투표</b>를 거쳐 황제 즉위 (<b>1804</b>)"],
+ ["나폴레옹","나폴레옹 전쟁에서 바다와 육지의 결과는?","바다: <b>영국</b>에 패배\n육지: 오스트리아 등을 격파하고 <b>유럽 대부분 장악</b>"],
+ ["나폴레옹","대륙 봉쇄령의 목적과 내용은?","목적: <b>영국 굴복</b>\n내용: 유럽 대륙과 영국 사이의 <b>무역·통신 금지</b>, 영국 선박의 대륙 항구 출입 금지"],
+ ["나폴레옹","나폴레옹이 러시아 원정에 나선 이유와 결과는?","러시아가 <b>대륙 봉쇄령을 어기고</b> 영국과 교역\n→ <b>추위와 굶주림</b>으로 실패"],
+ ["나폴레옹","나폴레옹 몰락 후 유럽에 남긴 영향 두 가지는?","① 프랑스 혁명의 <b>자유주의</b> 이념 전파\n② 침략에 저항하며 <b>민족주의</b> 운동 활발"],
+ ["나폴레옹","자유주의와 민족주의의 뜻은?","<b>자유주의</b>: 개인의 자유와 평등을 이루고 확대하려는 사상\n<b>민족주의</b>: 다른 민족의 지배·간섭에서 벗어나 민족 중심의 통일 국가를 이루려는 사상"],
+ ["나폴레옹","「1808년 5월 3일의 학살」이 비판한 것은?","나폴레옹 군대가 <b>에스파냐</b>를 정복하고 이에 반대하는 <b>민중을 학살</b>한 행위"]
+];
+const CATS = ["전체", ...new Set(CARDS.map(c=>c[0]))];
+
+/* ---------- 인쇄 레이아웃 ---------- */
+(function buildPrint(){
+  const root = document.getElementById('print');
+  const strip = s => s.replace(/<[^>]+>/g,'');
+  let html = `<div class="cover"><h1>프랑스 혁명과 나폴레옹 암기카드</h1>
+    <p>중2 역사 Ⅴ. 제국주의와 국민 국가 건설 운동 — 1. 유럽과 아메리카의 국민 국가 체제 (교과서 140~142쪽)</p>
+    <h2>학습 목표</h2><ul><li>프랑스 혁명의 배경과 전개 과정을 설명할 수 있다.</li><li>프랑스 혁명이 국민 국가 형성에 끼친 영향을 설명할 수 있다.</li></ul>
+    <div class="box"><b>흐름 한 줄</b><br>삼부회(1789.5) → 테니스코트의 서약(1789.6) → 바스티유 감옥 습격(1789.7.14) → 인권 선언(1789.8.26) → 입법 의회 → 국민 공회·루이 16세 처형(1793.1) → 총재 정부 → 통령 정부 → 나폴레옹 황제 즉위(1804)<br><br><b>의회·정부 순서</b> 국민 의회 → 입법 의회 → 국민 공회 → 총재 정부 → 통령 정부 (국-입-공-총-통)<br><b>기간:</b> 국민 의회 1789~1791 · 입법 의회 1791~1792 · 국민 공회 1792~1795 · 총재 정부 1795~1799 · 통령 정부 1799~</div>
+    <h2>사용 방법</h2><p>· 총 ${CARDS.length}장. 질문면/답면이 번갈아 인쇄됩니다.<br>· 인쇄 설정: <b>양면 인쇄 – 긴 쪽 넘기기</b> → 점선을 따라 자르면 앞면 질문, 뒷면 정답 카드가 됩니다.<br>· 이 표지는 단면으로 따로 인쇄하거나 빼고 인쇄하세요(2쪽부터).</p></div>`;
+  html += `<div class="cover" style="height:277mm"></div>`; // 표지 뒷면 비움(양면 맞춤)
+  for (let p=0; p<CARDS.length; p+=10){
+    const chunk = CARDS.slice(p,p+10);
+    let front='', back='';
+    for (let r=0;r<5;r++){
+      for (let c=0;c<2;c++){
+        const i=r*2+c, card=chunk[i], n=p+i+1;
+        front += card ? `<div class="pc q"><span class="tag">${card[0]}</span><span class="num">${n}</span><div class="txt">${card[1]}</div></div>` : `<div class="pc"></div>`;
+      }
+      for (let c=1;c>=0;c--){ // 뒷면은 좌우 반전
+        const i=r*2+c, card=chunk[i], n=p+i+1;
+        back += card ? `<div class="pc a"><span class="tag">정답</span><span class="num">${n}</span><div class="txt">${card[2]}</div></div>` : `<div class="pc"></div>`;
+      }
+    }
+    html += `<div class="sheet">${front}</div><div class="sheet">${back}</div>`;
+  }
+  root.innerHTML = html;
+})();
+
+/* ---------- 화면 카드 ---------- */
+let cat="전체", order=[], idx=0, flipped=false, rev=false, wrongOnly=false;
+const wrong = new Set();
+function rebuild(shuffle){
+  order = CARDS.map((c,i)=>i).filter(i => (cat==="전체"||CARDS[i][0]===cat) && (!wrongOnly||wrong.has(i)));
+  if (shuffle) for (let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  idx=0; flipped=false; render();
+}
+function render(){
+  const el=document.getElementById('card'), t=document.getElementById('txt');
+  if(!order.length){ t.innerHTML = wrongOnly ? "'다시 볼래요' 표시한 카드가 없어요." : "카드가 없어요."; document.getElementById('tag').textContent=''; document.getElementById('num').textContent=''; document.getElementById('pos').textContent='0 / 0'; return; }
+  const c=CARDS[order[idx]], showBack = flipped!==rev;
+  el.classList.toggle('back', showBack);
+  document.getElementById('tag').textContent = showBack ? '정답' : c[0];
+  document.getElementById('num').textContent = (order[idx]+1) + (wrong.has(order[idx])?' ✘':'');
+  t.innerHTML = showBack ? c[2] : c[1];
+  document.getElementById('pos').textContent = (idx+1)+' / '+order.length;
+}
+const f=document.getElementById('filters');
+CATS.forEach(k=>{const b=document.createElement('button');b.textContent=k;if(k===cat)b.classList.add('on');b.onclick=()=>{cat=k;[...f.children].forEach(x=>x.classList.toggle('on',x===b));rebuild(false);};f.appendChild(b);});
+document.getElementById('card').onclick=()=>{flipped=!flipped;render();};
+document.getElementById('next').onclick=()=>{if(order.length){idx=(idx+1)%order.length;flipped=false;render();}};
+document.getElementById('prev').onclick=()=>{if(order.length){idx=(idx-1+order.length)%order.length;flipped=false;render();}};
+document.getElementById('shuffle').onclick=()=>rebuild(true);
+document.getElementById('reverse').onclick=e=>{rev=!rev;e.target.classList.toggle('on',rev);flipped=false;render();};
+document.getElementById('onlyWrong').onclick=e=>{wrongOnly=!wrongOnly;e.target.classList.toggle('on',wrongOnly);rebuild(false);};
+document.getElementById('know').onclick=()=>{if(order.length){wrong.delete(order[idx]);document.getElementById('next').click();}};
+document.getElementById('dont').onclick=()=>{if(order.length){wrong.add(order[idx]);document.getElementById('next').click();}};
+rebuild(false);
+</script>
+</body>
+</html>
