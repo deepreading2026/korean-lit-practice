@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>산업화와 제국주의 암기카드 (중2 역사)</title>
+<style>
+  :root { --ink:#222; --line:#6b4fa0; --muted:#666; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif; color:var(--ink); background:#fff; }
+  /* ---------- 화면용 ---------- */
+  .screen { max-width:560px; margin:0 auto; padding:16px; }
+  .screen h1 { font-size:20px; margin:4px 0 2px; color:var(--line); }
+  .goal { font-size:13px; color:var(--muted); margin:0 0 12px; line-height:1.5; }
+  .bar { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .bar button { border:1.5px solid var(--line); background:#fff; color:var(--line); border-radius:8px; padding:7px 11px; font-size:14px; cursor:pointer; }
+  .bar button.on { background:var(--line); color:#fff; }
+  .card { position:relative; min-height:230px; border:2px solid var(--line); border-radius:14px; padding:22px 20px; display:flex; flex-direction:column; justify-content:center; cursor:pointer; user-select:none; }
+  .card .tag { position:absolute; top:10px; left:14px; font-size:12px; color:var(--line); font-weight:700; }
+  .card .num { position:absolute; top:10px; right:14px; font-size:12px; color:var(--muted); }
+  .card .txt { font-size:19px; line-height:1.55; text-align:center; white-space:pre-line; }
+  .card.back { border-style:dashed; }
+  .card.back .txt { font-size:17px; text-align:left; }
+  .hint { text-align:center; font-size:12px; color:var(--muted); margin:8px 0; }
+  .nav { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .nav button { border:1.5px solid var(--ink); background:#fff; border-radius:8px; padding:9px 18px; font-size:15px; cursor:pointer; }
+  .marks { display:flex; gap:8px; justify-content:center; margin-top:10px; }
+  .marks button { border:1.5px solid #999; background:#fff; border-radius:8px; padding:7px 12px; font-size:14px; cursor:pointer; }
+  .flow { font-size:13px; border:1.5px solid var(--line); border-radius:10px; padding:10px; margin-top:16px; line-height:1.7; }
+  .print { display:none; }
+  /* ---------- 인쇄용 (A4, 2×5, 양면 긴 쪽 넘김) ---------- */
+  @page { size:A4; margin:10mm; }
+  @media print {
+    .screen { display:none; }
+    .print { display:block; }
+  }
+  .sheet { width:190mm; height:277mm; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:repeat(5,1fr); page-break-after:always; break-after:page; }
+  .sheet:last-child { page-break-after:auto; }
+  .pc { border:0.6px dashed #999; position:relative; padding:8mm 7mm 6mm; display:flex; flex-direction:column; justify-content:center; }
+  .pc .tag { position:absolute; top:3mm; left:4mm; font-size:8pt; color:var(--line); font-weight:700; }
+  .pc .num { position:absolute; top:3mm; right:4mm; font-size:8pt; color:#888; }
+  .pc .txt { white-space:pre-line; line-height:1.45; }
+  .pc.q .txt { font-size:12pt; text-align:center; font-weight:600; }
+  .pc.a .txt { font-size:10.5pt; }
+  .pc.a .txt b { color:var(--line); }
+  .cover { width:190mm; height:277mm; page-break-after:always; break-after:page; padding:10mm 6mm; }
+  .cover h1 { font-size:20pt; border-bottom:2px solid var(--line); padding-bottom:4mm; color:var(--line); }
+  .cover h2 { font-size:12pt; margin:8mm 0 2mm; }
+  .cover p, .cover li { font-size:11pt; line-height:1.7; }
+  .cover .box { border:1.5px solid var(--line); border-radius:4mm; padding:4mm 6mm; margin-top:4mm; }
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <h1>산업화와 제국주의 암기카드</h1>
+  <p class="goal">중2 역사 Ⅴ-2 유럽의 산업화와 제국주의 (교과서 152~160쪽)<br>학습 목표: ① 산업 혁명의 배경과 전개 양상을 설명할 수 있다. ② 산업 혁명이 사회와 생태 환경에 끼친 영향을 설명할 수 있다. ③ 제국주의의 등장 배경과 팽창 과정을 설명할 수 있다.</p>
+  <div class="bar" id="filters"></div>
+  <div class="bar">
+    <button id="shuffle">섞기</button>
+    <button id="reverse">답→질문</button>
+    <button id="onlyWrong">모르는 카드만</button>
+  </div>
+  <div class="card" id="card"><span class="tag" id="tag"></span><span class="num" id="num"></span><div class="txt" id="txt"></div></div>
+  <div class="hint">카드를 누르면 뒤집혀요</div>
+  <div class="marks"><button id="know">✔ 알아요</button><button id="dont">✘ 다시 볼래요</button></div>
+  <div class="nav"><button id="prev">◀ 이전</button><span id="pos"></span><button id="next">다음 ▶</button></div>
+  <div class="flow"><b>흐름 한 줄:</b> 영국 산업 혁명(면직물→증기 기관→교통·통신) → 세계로 확산 → 자본주의·노동 문제·사회주의, 환경 오염 → 원료·시장·투자처 필요 → 제국주의(사회 진화론·인종주의) → 아프리카·아시아 분할<br><b>짝 지어 외우기:</b> 영국=종단(카이로–케이프타운)·인도 · 프랑스=횡단(알제리–마다가스카르)·인도차이나 · 미국=필리핀 · 네덜란드=인도네시아</div>
+</div>
+
+<div class="print" id="print"></div>
+
+<script>
+const CARDS = [
+[
+"산업 혁명 배경",
+"산업 혁명이란?",
+"18세기 후반 <b>영국</b>에서 기계 발명과 기술 혁신을 바탕으로 생산력이 크게 높아지면서 경제·사회 전반에 나타난 큰 변화"
+],
+[
+"산업 혁명 배경",
+"산업 혁명이 영국에서 가장 먼저 시작된 이유는?",
+"① 의회 정치로 <b>정치적 안정</b>\n② <b>석탄·철</b> 등 지하자원 풍부\n③ <b>인클로저 운동</b>으로 풍부한 노동력\n④ 넓은 <b>식민지</b> → 원료 공급지·상품 판매 시장"
+],
+[
+"산업 혁명 배경",
+"인클로저 운동이란?",
+"지주들이 공동 경작지·미개간지에 <b>울타리</b>를 쳐서 사유지로 만든 운동\n(16세기: 양 기르기 / 18세기: 곡물 생산)\n→ 땅 잃은 농민이 도시로 이동해 공장 노동자가 됨"
+],
+[
+"산업 혁명 전개",
+"산업 혁명이 면직물 공업에서 시작된 이유는?",
+"면직물은 가볍고 질기며 세탁이 간편해 <b>수요가 증가</b>했기 때문"
+],
+[
+"산업 혁명 전개",
+"면직물 공업에서 기계화를 이끈 발명품은?",
+"실을 뽑는 <b>방적기</b>와 옷감을 짜는 <b>방직기</b>\n(제니 방적기 1764 – 한 사람이 여러 가닥의 실을 뽑음)"
+],
+[
+"산업 혁명 전개",
+"제임스 와트가 개량한 증기 기관(1769)의 의미는?",
+"새로운 <b>동력원</b>으로 쓰여 생산량 크게 증가\n→ 면직물 공업이 가내 수공업에서 <b>공장제 기계 공업</b>으로 발전"
+],
+[
+"산업 혁명 전개",
+"산업 혁명기 교통 수단의 발달은?",
+"영국 <b>스티븐슨</b>의 <b>증기 기관차</b>(1825 운행) → 각지에 철도 부설\n미국 <b>풀턴</b>의 <b>증기선</b> → 수상 교통 발전"
+],
+[
+"산업 혁명 전개",
+"교통·통신 발달이 산업에 끼친 영향은?",
+"유선 전신·전화로 통신 발달\n→ 상품 시장 확대, 교류 활발 → <b>산업 발전 가속화</b>"
+],
+[
+"산업 혁명 확산",
+"벨기에·프랑스가 산업화를 이룬 바탕은?",
+"풍부한 <b>석탄</b> 등 자원"
+],
+[
+"산업 혁명 확산",
+"미국과 독일의 산업화 특징은?",
+"철강·기계·석유 화학 등 <b>중화학 공업</b> 중심\n<b>미국</b>: 남북 전쟁 후 세계 최대 공업국\n<b>독일</b>: 통일 후 <b>정부 주도</b> 산업화"
+],
+[
+"산업 혁명 확산",
+"러시아와 일본의 산업화는?",
+"<b>러시아</b>: 시베리아 횡단 철도 건설\n<b>일본</b>: 국가 주도로 <b>메이지 유신</b> 추진 → 산업 국가로 발전"
+],
+[
+"산업 혁명 확산",
+"최초의 만국 박람회는?",
+"<b>1851년 런던 만국 박람회</b>\n철골·유리로 지은 <b>수정궁</b>에서 개최\n→ 영국이 산업화의 선도자임을 과시"
+],
+[
+"사회 변화",
+"산업 혁명 이후 자리 잡은 경제 체제는?",
+"이윤 추구를 목적으로 상품을 생산하는 <b>자본주의</b> 경제 체제"
+],
+[
+"사회 변화",
+"산업 혁명으로 새로 형성된 두 사회 계층은?",
+"<b>산업 자본가</b>와 <b>노동자</b>"
+],
+[
+"사회 변화",
+"산업 혁명기 노동자의 생활은?",
+"열악한 환경에서 <b>낮은 임금</b>, <b>장시간 노동</b>\n여성·<b>아동</b>도 공장 노동, 사고를 당해도 보상받지 못함"
+],
+[
+"사회 변화",
+"러다이트 운동이란?",
+"일자리를 빼앗길 수 있다는 불안감에 노동자들이 <b>기계를 파괴</b>한 운동"
+],
+[
+"사회 변화",
+"노동자들이 노동 환경을 개선하려 한 방법은?",
+"<b>노동조합</b>을 만들어 노동 운동 전개"
+],
+[
+"사회 변화",
+"사회주의 사상이란?",
+"빈부 격차 등 자본주의의 문제를 비판하며 <b>평등한 사회</b>를 건설하자는 사상\n대표 인물 <b>마르크스</b>"
+],
+[
+"생태 환경",
+"산업 혁명 이후 나타난 환경 오염은?",
+"석탄·석유 사용 → <b>매연·스모그</b>(대기 오염)\n공장 폐수 → 강 오염\n산업 폐기물·쓰레기 → 토양 오염"
+],
+[
+"생태 환경",
+"산업 혁명기 도시 빈민가에 유행한 질병과 확산 경로는?",
+"<b>콜레라</b> 등 전염병\n철도·증기선을 통해 <b>세계 각지로 확산</b>"
+],
+[
+"제국주의",
+"제국주의란?",
+"원료 공급지·상품 판매 시장·<b>잉여 자본 투자처</b>를 확보하려고 경제력·군사력을 앞세워 약소국을 침략, 식민지를 넓힌 <b>팽창 정책</b>"
+],
+[
+"제국주의",
+"제국주의가 국민의 지지를 받은 이유는?",
+"<b>배타적 민족주의</b>와 결합\n국민도 실업 등 국내 문제 해결과 국가 위신을 위해 식민지가 필요하다고 생각"
+],
+[
+"제국주의",
+"세실 로즈가 말한 제국주의의 필요성은?",
+"식민지를 통해 <b>과잉 인구</b> 이주, 상품 시장 확보\n→ 내전을 피하고 <b>국내 문제 해결</b>"
+],
+[
+"제국주의",
+"사회 진화론이란?",
+"<b>우월한</b> 사회나 국가가 <b>열등한</b> 사회나 국가를 지배하는 것이 당연하다는 논리"
+],
+[
+"제국주의",
+"제국주의 국가가 침략을 정당화한 두 이론과 구실은?",
+"<b>사회 진화론</b>, <b>인종주의</b>\n→ 식민지인을 <b>문명화</b>해야 한다는 구실\n(예: 키플링 「백인의 짐」)"
+],
+[
+"아프리카",
+"아프리카가 열강의 침략 대상이 된 계기와 결과는?",
+"탐험가들에 의해 인구·자원이 풍부하다는 사실이 알려짐\n→ 20세기 초 <b>라이베리아·에티오피아</b>를 제외한 대부분이 식민지"
+],
+[
+"아프리카",
+"영국의 종단 정책이란?",
+"아프리카 최남단 <b>케이프타운</b>과 <b>카이로</b>를 잇는 남북 방향 침략"
+],
+[
+"아프리카",
+"프랑스의 횡단 정책이란?",
+"<b>알제리·모로코</b>와 동쪽의 <b>마다가스카르섬</b>을 연결하는 동서 방향 침략"
+],
+[
+"아프리카",
+"파쇼다 사건(1898)이란?",
+"종단 정책(영국)과 횡단 정책(프랑스)이 <b>파쇼다</b>에서 충돌\n→ <b>프랑스의 양보</b>로 마무리"
+],
+[
+"아프리카",
+"뒤늦게 아프리카 경쟁에 뛰어든 나라와 대립 사례는?",
+"<b>독일·이탈리아</b>(뒤늦게 통일)\n독일은 <b>모로코</b>를 두고 프랑스와 두 차례 대립"
+],
+[
+"아프리카",
+"아프리카 수탈 사례 두 가지는?",
+"<b>벨기에</b>: 식민 통치로 <b>콩고인</b>을 고통에 빠뜨림\n<b>독일</b>: 헤레로족 학살"
+],
+[
+"아시아",
+"영국의 아시아 침략은?",
+"<b>동인도 회사</b>를 앞세워 인도 진출 → 플라시 전투에서 프랑스 제압, <b>인도</b> 대부분 차지\n서아시아·말레이반도·미얀마로 확대"
+],
+[
+"아시아",
+"프랑스의 아시아 침략은?",
+"인도에서 밀려난 후 <b>베트남·캄보디아</b> 점령\n→ <b>인도차이나 연방</b> 수립"
+],
+[
+"아시아",
+"미국과 네덜란드의 아시아 식민지는?",
+"<b>미국</b>: 에스파냐와의 전쟁 승리 → <b>필리핀</b>\n<b>네덜란드</b>: <b>인도네시아</b> 일대 장악 → 네덜란드령 동인도"
+],
+[
+"식민지 사회",
+"플랜테이션 농장이란?",
+"한 가지 작물을 대규모로 재배하는 농업\n대개 열강의 자본 + 원주민의 저렴한 노동력"
+],
+[
+"식민지 사회",
+"제국주의가 식민지 경제에 끼친 피해는?",
+"원료 수탈, 값싼 공장 상품 판매 → <b>전통 수공업 붕괴</b>\n플랜테이션 확대 → <b>식량 생산 감소</b>\n원주민은 <b>낮은 임금의 노동자</b>로 전락"
+],
+[
+"식민지 사회",
+"제국주의 시대 식민지의 생태계 변화 사례는?",
+"개발로 숲·초원 파괴, 플랜테이션이 기존 생태계 대체\n<b>상아</b>를 위한 코끼리 사냥\n오스트레일리아에 들여온 <b>토끼</b> 수억 마리로 번식"
+],
+[
+"확인",
+"[O·X] 산업 혁명은 18세기 후반 독일에서 시작되어 전 세계로 확산되었다.",
+"<b>X</b>\n산업 혁명은 <b>영국</b>에서 시작됨"
+],
+[
+"확인",
+"[O·X] 프랑스는 인도의 대부분을 차지하고 서아시아·말레이반도·미얀마로 세력을 확대했다.",
+"<b>X</b>\n<b>영국</b>에 대한 설명"
+],
+[
+"연표",
+"산업 혁명 연표를 순서대로 말하면?",
+"<b>1764</b> 제니 방적기 발명\n<b>1769</b> 와트, 증기 기관 개량\n<b>1825</b> 영국 증기 기관차 운행\n<b>1851</b> 런던 만국 박람회\n<b>1898</b> 파쇼다 사건"
+]
+];
+const CATS = ["전체", ...new Set(CARDS.map(c=>c[0]))];
+
+/* ---------- 인쇄 레이아웃 ---------- */
+(function buildPrint(){
+  const root = document.getElementById('print');
+  const strip = s => s.replace(/<[^>]+>/g,'');
+  let html = `<div class="cover"><h1>산업화와 제국주의 암기카드</h1>
+    <p>중2 역사 Ⅴ. 제국주의와 국민 국가 건설 운동 — 2. 유럽의 산업화와 제국주의 (교과서 152~160쪽)</p>
+    <h2>학습 목표</h2><ul><li>산업 혁명의 배경과 전개 양상을 설명할 수 있다.</li><li>산업 혁명이 사회와 생태 환경에 끼친 영향을 설명할 수 있다.</li><li>제국주의의 등장 배경과 팽창 과정을 설명할 수 있다.</li></ul>
+    <div class="box"><b>흐름 한 줄:</b> 영국 산업 혁명(면직물→증기 기관→교통·통신) → 세계로 확산 → 자본주의·노동 문제·사회주의, 환경 오염 → 원료·시장·투자처 필요 → 제국주의(사회 진화론·인종주의) → 아프리카·아시아 분할<br><b>짝 지어 외우기:</b> 영국=종단(카이로–케이프타운)·인도 · 프랑스=횡단(알제리–마다가스카르)·인도차이나 · 미국=필리핀 · 네덜란드=인도네시아</div>
+    <h2>사용 방법</h2><p>· 총 ${CARDS.length}장. 질문면/답면이 번갈아 인쇄됩니다.<br>· 인쇄 설정: <b>양면 인쇄 – 긴 쪽 넘기기</b> → 점선을 따라 자르면 앞면 질문, 뒷면 정답 카드가 됩니다.<br>· 이 표지는 단면으로 따로 인쇄하거나 빼고 인쇄하세요(2쪽부터).</p></div>`;
+  html += `<div class="cover" style="height:277mm"></div>`; // 표지 뒷면 비움(양면 맞춤)
+  for (let p=0; p<CARDS.length; p+=10){
+    const chunk = CARDS.slice(p,p+10);
+    let front='', back='';
+    for (let r=0;r<5;r++){
+      for (let c=0;c<2;c++){
+        const i=r*2+c, card=chunk[i], n=p+i+1;
+        front += card ? `<div class="pc q"><span class="tag">${card[0]}</span><span class="num">${n}</span><div class="txt">${card[1]}</div></div>` : `<div class="pc"></div>`;
+      }
+      for (let c=1;c>=0;c--){ // 뒷면은 좌우 반전
+        const i=r*2+c, card=chunk[i], n=p+i+1;
+        back += card ? `<div class="pc a"><span class="tag">정답</span><span class="num">${n}</span><div class="txt">${card[2]}</div></div>` : `<div class="pc"></div>`;
+      }
+    }
+    html += `<div class="sheet">${front}</div><div class="sheet">${back}</div>`;
+  }
+  root.innerHTML = html;
+})();
+
+/* ---------- 화면 카드 ---------- */
+let cat="전체", order=[], idx=0, flipped=false, rev=false, wrongOnly=false;
+const wrong = new Set();
+function rebuild(shuffle){
+  order = CARDS.map((c,i)=>i).filter(i => (cat==="전체"||CARDS[i][0]===cat) && (!wrongOnly||wrong.has(i)));
+  if (shuffle) for (let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  idx=0; flipped=false; render();
+}
+function render(){
+  const el=document.getElementById('card'), t=document.getElementById('txt');
+  if(!order.length){ t.innerHTML = wrongOnly ? "'다시 볼래요' 표시한 카드가 없어요." : "카드가 없어요."; document.getElementById('tag').textContent=''; document.getElementById('num').textContent=''; document.getElementById('pos').textContent='0 / 0'; return; }
+  const c=CARDS[order[idx]], showBack = flipped!==rev;
+  el.classList.toggle('back', showBack);
+  document.getElementById('tag').textContent = showBack ? '정답' : c[0];
+  document.getElementById('num').textContent = (order[idx]+1) + (wrong.has(order[idx])?' ✘':'');
+  t.innerHTML = showBack ? c[2] : c[1];
+  document.getElementById('pos').textContent = (idx+1)+' / '+order.length;
+}
+const f=document.getElementById('filters');
+CATS.forEach(k=>{const b=document.createElement('button');b.textContent=k;if(k===cat)b.classList.add('on');b.onclick=()=>{cat=k;[...f.children].forEach(x=>x.classList.toggle('on',x===b));rebuild(false);};f.appendChild(b);});
+document.getElementById('card').onclick=()=>{flipped=!flipped;render();};
+document.getElementById('next').onclick=()=>{if(order.length){idx=(idx+1)%order.length;flipped=false;render();}};
+document.getElementById('prev').onclick=()=>{if(order.length){idx=(idx-1+order.length)%order.length;flipped=false;render();}};
+document.getElementById('shuffle').onclick=()=>rebuild(true);
+document.getElementById('reverse').onclick=e=>{rev=!rev;e.target.classList.toggle('on',rev);flipped=false;render();};
+document.getElementById('onlyWrong').onclick=e=>{wrongOnly=!wrongOnly;e.target.classList.toggle('on',wrongOnly);rebuild(false);};
+document.getElementById('know').onclick=()=>{if(order.length){wrong.delete(order[idx]);document.getElementById('next').click();}};
+document.getElementById('dont').onclick=()=>{if(order.length){wrong.add(order[idx]);document.getElementById('next').click();}};
+rebuild(false);
+</script>
+</body>
+</html>
